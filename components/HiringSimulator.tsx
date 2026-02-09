@@ -18,7 +18,6 @@ import {
     AlertTriangle,
     DollarSign,
     UserPlus,
-    Zap,
 } from "lucide-react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -47,13 +46,21 @@ const Card = ({
     </div>
 );
 
+interface MetricCardProps {
+    icon: React.ElementType;
+    label: string;
+    value: string | number;
+    subtext?: string;
+    color?: string;
+}
+
 const MetricCard = ({
     icon: Icon,
     label,
     value,
     subtext,
     color = "text-zinc-100",
-}: any) => (
+}: MetricCardProps) => (
     <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-xl flex items-start space-x-4">
         <div className={cn("p-3 rounded-lg bg-zinc-800", color)}>
             <Icon size={24} />
@@ -66,7 +73,16 @@ const MetricCard = ({
     </div>
 );
 
-const SliderControl = ({ label, value, min, max, onChange, unit }: any) => (
+interface SliderControlProps {
+    label: string;
+    value: number;
+    min: number;
+    max: number;
+    onChange: (value: number) => void;
+    unit: string;
+}
+
+const SliderControl = ({ label, value, min, max, onChange, unit }: SliderControlProps) => (
     <div className="mb-6">
         <div className="flex justify-between items-center mb-2">
             <label className="text-sm font-medium text-zinc-300">{label}</label>
@@ -91,21 +107,79 @@ export default function HiringSimulator() {
     // Simulator State
     const [numClients, setNumClients] = useState(120);
     const [numAdvisors, setNumAdvisors] = useState(4);
+    const [numSupport, setNumSupport] = useState(2); // New Support Staff State
     const [hoursPerClient, setHoursPerClient] = useState(5.5); // Monthly hours needed per client
     const [advisorCapacity, setAdvisorCapacity] = useState(140); // Max billable hours per advisor/mo
+    const [supportCapacity, setSupportCapacity] = useState(140); // Max hours per support staff/mo
     const [avgClientFee, setAvgClientFee] = useState(350);
+    const [advisorMonthlyCost, setAdvisorMonthlyCost] = useState(6000);
+    const [supportMonthlyCost, setSupportMonthlyCost] = useState(4000);
+    const [actualHoursPerClient, setActualHoursPerClient] = useState(0);
+    const [totalActualHours, setTotalActualHours] = useState(0);
+    const [advisorActualHours, setAdvisorActualHours] = useState(0);
+    const [supportActualHours, setSupportActualHours] = useState(0);
+
+    // Load actual time entries and calculate monthly run rate
+    React.useEffect(() => {
+        const savedEntries = localStorage.getItem("budgetdog_time_entries");
+        if (savedEntries) {
+            interface TimeEntry {
+                timestamp: string;
+                duration: number;
+                category?: "advisor" | "support";
+            }
+            const entries: TimeEntry[] = JSON.parse(savedEntries);
+            const now = new Date();
+            const thirtyDaysAgo = new Date(now.setDate(now.getDate() - 30));
+
+            const recentEntries = entries.filter((e) => new Date(e.timestamp) > thirtyDaysAgo);
+
+            const totalMin = recentEntries.reduce((acc, curr) => acc + curr.duration, 0);
+            const advMin = recentEntries.filter(e => e.category === 'advisor' || !e.category).reduce((acc, curr) => acc + curr.duration, 0);
+            const suppMin = recentEntries.filter(e => e.category === 'support').reduce((acc, curr) => acc + curr.duration, 0);
+
+            const mHours = totalMin / 60;
+            setTotalActualHours(mHours);
+            setAdvisorActualHours(advMin / 60);
+            setSupportActualHours(suppMin / 60);
+
+            // Avoid division by zero
+            setActualHoursPerClient(numClients > 0 ? mHours / numClients : 0);
+        }
+    }, [numClients]); // Re-calculate if numClients slider changes
 
     // Derived Metrics
     const totalHoursNeeded = numClients * hoursPerClient;
-    const totalCapacity = numAdvisors * advisorCapacity;
-    const utilizationRate = (totalHoursNeeded / totalCapacity) * 100;
-    const surplusHours = totalCapacity - totalHoursNeeded;
-    const canTakeNewClients = Math.floor(surplusHours / hoursPerClient);
+    const totalAdvisorCapacity = numAdvisors * advisorCapacity;
+    const totalSupportCapacity = numSupport * supportCapacity;
+
+    // Advisor Utilization
+    const advisorUtilizationRate = (totalHoursNeeded / totalAdvisorCapacity) * 100;
+    const advisorSurplusHours = totalAdvisorCapacity - totalHoursNeeded;
+    const advisorCanTakeNewClients = Math.floor(advisorSurplusHours / hoursPerClient);
+
+    // Support Utilization (Simplified: Assuming support needs scale 1:1 with client hours for now, can be adjusted)
+    // In reality, support might need less hours per client, let's assume 0.5 ratio for now or keep it simple and say they support advisors.
+    // Let's keep it simple: Support Staff also have capacity. Let's assume they need to cover the same hours for now? 
+    // No, that doesn't make sense. Let's assume Support Staff capacity is distinct.
+    // Let's assume a dummy ratio for Support work: 2 hours per client?
+    const supportHoursPerClient = 2;
+    const totalSupportHoursNeeded = numClients * supportHoursPerClient;
+    const supportUtilizationRate = (totalSupportHoursNeeded / totalSupportCapacity) * 100;
+
+    // Global Capacity (Bottleneck is the higher utilization)
+    const utilizationRate = Math.max(advisorUtilizationRate, supportUtilizationRate);
+    const isAdvisorBottleneck = advisorUtilizationRate > supportUtilizationRate;
+
+    // This `canTakeNewClients` logic is a bit tricky with two constraints. Let's just use the Advisor one for the main metric for now as it's the primary revenue driver, 
+    // but show Support status.
+    const canTakeNewClients = advisorCanTakeNewClients;
 
     // Financials
     const monthlyRevenue = numClients * avgClientFee;
-    const advisorCost = numAdvisors * 6000;
-    const margin = monthlyRevenue - advisorCost;
+    const advisorCostValue = numAdvisors * advisorMonthlyCost;
+    const supportCostValue = numSupport * supportMonthlyCost;
+    const margin = monthlyRevenue - (advisorCostValue + supportCostValue);
 
     // Hiring Trigger Logic
     const isOverCapacity = utilizationRate > 100;
@@ -115,12 +189,11 @@ export default function HiringSimulator() {
     const projectionData = Array.from({ length: 6 }).map((_, i) => {
         const monthClients = Math.floor(numClients * Math.pow(1.05, i)); // 5% growth
         const monthHours = monthClients * hoursPerClient;
-        const monthUtilization = (monthHours / totalCapacity) * 100;
 
         return {
             month: `Month ${i + 1}`,
             Demand: monthHours,
-            Capacity: totalCapacity,
+            Capacity: totalAdvisorCapacity,
         };
     });
 
@@ -137,15 +210,28 @@ export default function HiringSimulator() {
                 {/* Scalability Formula Display */}
                 <div className="mt-4 md:mt-0 px-6 py-3 bg-zinc-900 border border-zinc-800 rounded-xl flex items-center gap-4">
                     <div className="text-right">
-                        <p className="text-xs text-zinc-500 uppercase font-bold tracking-wider">Scalability Formula</p>
+                        <p className="text-xs text-zinc-500 uppercase font-bold tracking-wider">Estimated Capacity</p>
                         <p className="text-lg font-mono text-white">
-                            <span className="text-yellow-400">{numClients}</span> Clients = <span className="text-yellow-400">{totalHoursNeeded.toFixed(0)}</span> Advisor Hours
+                            <span className="text-yellow-400">{numClients}</span> Clients = <span className="text-yellow-400">{totalHoursNeeded.toFixed(0)}</span> Hrs Needed
                         </p>
                     </div>
                     <div className="h-10 w-0.5 bg-zinc-800"></div>
                     <div className="pl-2">
-                        <p className="text-xs text-zinc-500">Ratio</p>
-                        <p className="text-sm font-bold text-white">1 Client : {hoursPerClient} Hrs</p>
+                        <p className="text-xs text-zinc-500">Reality Check (Last 30 Days)</p>
+                        <div className="flex gap-4">
+                            <div>
+                                <p className="text-xs text-zinc-500">Total Logged</p>
+                                <p className="text-sm font-bold text-white">{totalActualHours.toFixed(1)} Hrs</p>
+                            </div>
+                            <div>
+                                <p className="text-xs text-zinc-500">Implied Ratio</p>
+                                <p className="text-sm font-bold text-white">
+                                    <span className={actualHoursPerClient > hoursPerClient ? "text-red-400" : "text-green-400"}>
+                                        {actualHoursPerClient.toFixed(1)} Hrs/Client
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </header>
@@ -160,41 +246,91 @@ export default function HiringSimulator() {
                             Scenario Controls
                         </h2>
 
-                        <SliderControl
-                            label="Active Clients"
-                            value={numClients}
-                            min={10}
-                            max={500}
-                            onChange={setNumClients}
-                            unit="students"
-                        />
-                        <SliderControl
-                            label="Advisor Count"
-                            value={numAdvisors}
-                            min={1}
-                            max={20}
-                            onChange={setNumAdvisors}
-                            unit="advisors"
-                        />
+                        <div className="space-y-6">
+                            <SliderControl
+                                label="Active Clients"
+                                value={numClients}
+                                min={10}
+                                max={500}
+                                onChange={setNumClients}
+                                unit="clients"
+                            />
 
-                        <hr className="border-zinc-800 my-6" />
+                            <hr className="border-zinc-800" />
 
-                        <SliderControl
-                            label="Hours Needed / Client"
-                            value={hoursPerClient}
-                            min={1}
-                            max={20}
-                            onChange={setHoursPerClient}
-                            unit="hrs/mo"
-                        />
-                        <SliderControl
-                            label="Max Advisor Capacity"
-                            value={advisorCapacity}
-                            min={80}
-                            max={180}
-                            onChange={setAdvisorCapacity}
-                            unit="hrs/mo"
-                        />
+                            <SliderControl
+                                label="Advisor Count"
+                                value={numAdvisors}
+                                min={1}
+                                max={20}
+                                onChange={setNumAdvisors}
+                                unit="advisors"
+                            />
+                            <SliderControl
+                                label="Support/Admin Count"
+                                value={numSupport}
+                                min={0}
+                                max={10}
+                                onChange={setNumSupport}
+                                unit="staff"
+                            />
+
+                            <hr className="border-zinc-800" />
+
+                            <SliderControl
+                                label="Hours Needed / Client"
+                                value={hoursPerClient}
+                                min={1}
+                                max={20}
+                                onChange={setHoursPerClient}
+                                unit="hrs/mo"
+                            />
+                            <SliderControl
+                                label="Max Advisor Capacity"
+                                value={advisorCapacity}
+                                min={80}
+                                max={180}
+                                onChange={setAdvisorCapacity}
+                                unit="hrs/mo"
+                            />
+                            <SliderControl
+                                label="Max Support Capacity"
+                                value={supportCapacity}
+                                min={80}
+                                max={180}
+                                onChange={setSupportCapacity}
+                                unit="hrs/mo"
+                            />
+
+                            <hr className="border-zinc-800" />
+
+                            <h3 className="text-sm font-bold text-zinc-500 uppercase tracking-widest mb-4">Financial Assumptions</h3>
+
+                            <SliderControl
+                                label="Avg Monthly Fee / Client"
+                                value={avgClientFee}
+                                min={50}
+                                max={2000}
+                                onChange={setAvgClientFee}
+                                unit="$"
+                            />
+                            <SliderControl
+                                label="Advisor Monthly Cost"
+                                value={advisorMonthlyCost}
+                                min={2000}
+                                max={15000}
+                                onChange={setAdvisorMonthlyCost}
+                                unit="$"
+                            />
+                            <SliderControl
+                                label="Support Monthly Cost"
+                                value={supportMonthlyCost}
+                                min={2000}
+                                max={10000}
+                                onChange={setSupportMonthlyCost}
+                                unit="$"
+                            />
+                        </div>
                     </Card>
 
                     {/* Alert Box */}
@@ -213,9 +349,9 @@ export default function HiringSimulator() {
                             </h4>
                             <p className="text-sm mt-1 opacity-90">
                                 {isOverCapacity
-                                    ? `You are ${Math.round(utilizationRate)}% utilized. Clients are underserved.`
+                                    ? `You are ${Math.round(utilizationRate)}% utilized (${isAdvisorBottleneck ? 'Advisors' : 'Support'}). Clients are underserved.`
                                     : isHiringWarning
-                                        ? "Utilization is above 85%. Start recruiting now."
+                                        ? `Utilization is above 85% (${isAdvisorBottleneck ? 'Advisors' : 'Support'}). Start recruiting now.`
                                         : "Team has room to grow."}
                             </p>
                         </div>
@@ -237,15 +373,15 @@ export default function HiringSimulator() {
                             icon={Briefcase}
                             label="Open Capacity"
                             value={canTakeNewClients > 0 ? `+${canTakeNewClients}` : "0"}
-                            subtext="new clients fit"
+                            subtext="new clients fit (Adv)"
                             color={canTakeNewClients < 5 ? (canTakeNewClients < 0 ? "text-red-500" : "text-yellow-600") : "text-white"}
                         />
                         <MetricCard
                             icon={UserPlus}
-                            label="Utilization Rate"
-                            value={`${Math.round(utilizationRate)}%`}
-                            subtext={`${totalHoursNeeded.toFixed(0)} of ${totalCapacity} hours`}
-                            color={utilizationRate > 85 ? "text-red-400" : "text-zinc-100"}
+                            label="Adv Utilization"
+                            value={`${Math.round(advisorUtilizationRate)}%`}
+                            subtext={`${totalHoursNeeded.toFixed(0)} of ${totalAdvisorCapacity} hours`}
+                            color={advisorUtilizationRate > 85 ? "text-red-400" : "text-zinc-100"}
                         />
                         <MetricCard
                             icon={DollarSign}
@@ -258,7 +394,7 @@ export default function HiringSimulator() {
                     {/* Charts */}
                     <Card className="p-6">
                         <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-lg font-bold text-white">6-Month Capacity Projection</h3>
+                            <h3 className="text-lg font-bold text-white">6-Month Capacity Projection (Advisor)</h3>
                             <div className="text-xs text-zinc-500 font-mono">Growth Rate: 5% / mo</div>
                         </div>
 
@@ -285,23 +421,61 @@ export default function HiringSimulator() {
                             <h3 className="text-lg font-bold text-white">Utilization Gauge</h3>
                             <span className="text-xs text-zinc-500">Real-time simulation</span>
                         </div>
-                        {/* Visual Bar for Capacity */}
-                        <div className="w-full bg-zinc-800 rounded-sm h-8 overflow-hidden relative border border-zinc-700">
-                            <div
-                                className={cn("h-full transition-all duration-500",
-                                    utilizationRate > 100 ? "bg-red-600" :
-                                        utilizationRate > 85 ? "bg-yellow-500" : "bg-zinc-100"
-                                )}
-                                style={{ width: `${Math.min(utilizationRate, 100)}%` }}
-                            />
-                            {/* Tick for 85% */}
-                            <div className="absolute top-0 bottom-0 w-0.5 bg-black/50 z-10" style={{ left: '85%' }} />
-                            <span className="absolute top-1 right-24 text-xs font-bold text-white z-20 shadow-black drop-shadow-md">Warning (85%)</span>
+
+                        {/* Advisor Gauge */}
+                        <div className="mb-4">
+                            <div className="flex justify-between text-xs mb-1">
+                                <span className="text-zinc-400">Advisors</span>
+                                <div className="flex gap-2">
+                                    <span className="text-zinc-500">Est: {Math.round(advisorUtilizationRate)}%</span>
+                                    <span className="text-white font-bold">Actual: {Math.round((advisorActualHours / totalAdvisorCapacity) * 100)}%</span>
+                                </div>
+                            </div>
+                            <div className="w-full bg-zinc-800 rounded-sm h-6 overflow-hidden relative border border-zinc-700">
+                                <div
+                                    className={cn("h-full transition-all duration-500",
+                                        advisorUtilizationRate > 100 ? "bg-red-600" :
+                                            advisorUtilizationRate > 85 ? "bg-yellow-500" : "bg-blue-500"
+                                    )}
+                                    style={{ width: `${Math.min(advisorUtilizationRate, 100)}%` }}
+                                />
+                                {/* Actual Marker */}
+                                <div
+                                    className="absolute top-0 bottom-0 w-1 bg-white shadow-[0_0_8px_white] z-20"
+                                    style={{ left: `${Math.min((advisorActualHours / totalAdvisorCapacity) * 100, 100)}%`, display: advisorActualHours > 0 ? 'block' : 'none' }}
+                                    title={`Actual: ${Math.round((advisorActualHours / totalAdvisorCapacity) * 100)}%`}
+                                />
+                                <div className="absolute top-0 bottom-0 w-0.5 bg-black/50 z-10" style={{ left: '85%' }} />
+                            </div>
                         </div>
-                        <div className="mt-2 flex justify-between text-xs text-zinc-500">
-                            <span>0%</span>
-                            <span>100% Fully Booked</span>
+
+                        {/* Support Gauge */}
+                        <div>
+                            <div className="flex justify-between text-xs mb-1">
+                                <span className="text-zinc-400">Support / Admin</span>
+                                <div className="flex gap-2">
+                                    <span className="text-zinc-500">Est: {Math.round(supportUtilizationRate)}%</span>
+                                    <span className="text-white font-bold">Actual: {Math.round((supportActualHours / totalSupportCapacity) * 100)}%</span>
+                                </div>
+                            </div>
+                            <div className="w-full bg-zinc-800 rounded-sm h-6 overflow-hidden relative border border-zinc-700">
+                                <div
+                                    className={cn("h-full transition-all duration-500",
+                                        supportUtilizationRate > 100 ? "bg-red-600" :
+                                            supportUtilizationRate > 85 ? "bg-yellow-500" : "bg-purple-500"
+                                    )}
+                                    style={{ width: `${Math.min(supportUtilizationRate, 100)}%` }}
+                                />
+                                {/* Actual Marker */}
+                                <div
+                                    className="absolute top-0 bottom-0 w-1 bg-white shadow-[0_0_8px_white] z-20"
+                                    style={{ left: `${Math.min((supportActualHours / totalSupportCapacity) * 100, 100)}%`, display: supportActualHours > 0 ? 'block' : 'none' }}
+                                    title={`Actual: ${Math.round((supportActualHours / totalSupportCapacity) * 100)}%`}
+                                />
+                                <div className="absolute top-0 bottom-0 w-0.5 bg-black/50 z-10" style={{ left: '85%' }} />
+                            </div>
                         </div>
+
                     </Card>
 
                 </div>
