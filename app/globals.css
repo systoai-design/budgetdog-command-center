@@ -1,26 +1,81 @@
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Light Mode */
+  --color-primary: #FBBF24;
+  /* Amber-400 */
+  --color-primary-dark: #D97706;
+  --color-primary-hover: #FFD54F;
+
+  --color-background-light: #F3F4F6;
+  /* Gray-100 */
+  --color-background-dark: #0A0A0A;
+  /* Near black */
+
+  --color-surface-light: #FFFFFF;
+  --color-surface-dark: #171717;
+  /* Neutral-900 */
+
+  --color-border-light: #E5E7EB;
+  --color-border-dark: #262626;
+
+  --color-card-dark: #1E1E1E;
+  --color-accent-blue: #3B82F6;
+  --color-accent-purple: #A855F7;
+
+  /* System defaults mapping */
+  --background: var(--color-background-light);
+  --foreground: #111827;
+  /* Gray-900 */
+  --surface: var(--color-surface-light);
+  --border: var(--color-border-light);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-primary: var(--color-primary);
+  --color-primary-dark: var(--color-primary-dark);
+  --color-primary-hover: var(--color-primary-hover);
+
+  --color-background-light: var(--color-background-light);
+  --color-background-dark: var(--color-background-dark);
+
+  --color-surface-light: var(--color-surface-light);
+  --color-surface-dark: var(--color-surface-dark);
+
+  --color-border-light: var(--color-border-light);
+  --color-border-dark: var(--color-border-dark);
+
+  --color-card-dark: var(--color-card-dark);
+  --color-accent-blue: var(--color-accent-blue);
+  --color-accent-purple: var(--color-accent-purple);
+
+  --font-display: "Inter", sans-serif;
+  --font-body: "Inter", sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+
+
+/* Explicit Dark Mode Overrides when .dark class is present */
+.dark {
+  --background: var(--color-background-dark);
+  --foreground: #F3F4F6;
+  --surface: var(--color-surface-dark);
+  --border: var(--color-border-dark);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
+}
+
+/* Utility for material icons alignment */
+.material-icons {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
 }

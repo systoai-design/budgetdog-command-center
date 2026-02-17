@@ -20,13 +20,13 @@ export const Tab = ({ label, isActive, onClick, icon: Icon }: TabProps) => (
     <button
         onClick={onClick}
         className={cn(
-            "px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2",
+            "px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2 text-sm",
             isActive
-                ? "bg-yellow-500 text-black shadow-lg shadow-yellow-500/20"
-                : "text-zinc-400 hover:text-white hover:bg-zinc-800"
+                ? "bg-primary text-surface-dark shadow-lg shadow-primary/20"
+                : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-zinc-800"
         )}
     >
-        {Icon && <Icon size={18} />}
+        {Icon && <Icon size={16} />}
         {label}
     </button>
 );
@@ -37,7 +37,7 @@ interface TabsProps {
 }
 
 export const TabsList = ({ children, className }: TabsProps) => (
-    <div className={cn("flex space-x-2 bg-zinc-900/50 p-1.5 rounded-xl border border-zinc-800 backdrop-blur-sm", className)}>
+    <div className={cn("flex space-x-1 bg-surface-light dark:bg-surface-dark p-1 rounded-xl border border-border-light dark:border-border-dark", className)}>
         {children}
     </div>
 );
