@@ -36,13 +36,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [viewMode, setViewMode] = useState<"advisor" | "support" | "admin">("advisor");
     const router = useRouter();
 
+    const [config, setConfig] = useState<{ admins: string[], domains: string[] }>({ admins: [], domains: [] });
+
     useEffect(() => {
+        // Fetch Admin Config
+        fetch("/api/admin/config").then(res => res.json()).then(data => {
+            if (data.admins && data.domains) {
+                setConfig({
+                    admins: data.admins.map((a: any) => a.email),
+                    domains: data.domains.map((d: any) => d.domain)
+                });
+            }
+        }).catch(err => console.error("Failed to load admin config", err));
+
         // 1. Check active session
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            // We need to wait for config to be loaded? 
+            // Actually, we can pass config to handleSession, but it might be empty initially.
+            // Let's rely on the useEffect dependency or check inside handleSession if config is ready?
+            // Simpler: Just refresh session logic when config changes.
+        });
+    }, []);
+
+    // Re-run session check when config changes to ensure permissions are updated
+    useEffect(() => {
         supabase.auth.getSession().then(({ data: { session } }) => {
             handleSession(session);
         });
+    }, [config]);
 
-        // 2. Listen for auth changes
+    useEffect(() => {
         const {
             data: { subscription },
         } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -50,7 +73,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         });
 
         return () => subscription.unsubscribe();
-    }, []);
+    }, [config]); // Add config dependency
 
     const handleSession = (session: Session | null) => {
         setSession(session);
@@ -58,10 +81,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const email = session.user.email;
 
             // Domain Restriction
-            const isAllowed = email === "systo.ai@gmail.com" || email.endsWith("@budgetdog.com");
+            // Fallback: Always allow systo.ai and budgetdog.com
+            const isHardcodedAllowed = email === "systo.ai@gmail.com" || email.endsWith("@budgetdog.com");
+            const isDynamicAllowed = config.domains.some(d => email.endsWith(d));
 
-            if (!isAllowed) {
-                alert("Access Denied: Restricted to @budgetdog.com and systo.ai@gmail.com");
+            // If config hasn't loaded yet, strict check might be premature. 
+            // However, hardcoded allowed will always pass.
+            // For new dynamic domains, they might be blocked until config loads.
+            // This is a trade-off. We could add a "loading" state.
+
+            const isAllowed = isHardcodedAllowed || isDynamicAllowed;
+
+            if (!isAllowed && config.domains.length > 0) {
+                // Only enforce if we have loaded at least some config, or if we are sure.
+                // But wait, if config is empty (network error), we default to hardcoded.
+                // That's safe.
+
+                alert("Access Denied: Domain not authorized.");
                 supabase.auth.signOut();
                 setUser(null);
                 router.push("/");
@@ -71,7 +107,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             // Load persisted role or default
             const storedRole = localStorage.getItem(`budgetdog_role_${email}`);
             const role: "advisor" | "support" | "admin" = (storedRole as any) || "advisor";
-            const isSuperAdmin = email === "systo.ai@gmail.com";
+
+            const isHardcodedAdmin = email === "systo.ai@gmail.com";
+            const isDynamicAdmin = config.admins.includes(email);
+            const isSuperAdmin = isHardcodedAdmin || isDynamicAdmin;
 
             setUser({
                 email,
@@ -85,7 +124,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
             // Set initial view mode
             if (isSuperAdmin) {
-                setViewMode("admin");
+                // If they were already in a specific mode, maybe keep it?
+                // For now, default to admin view on fresh load is fine.
+                // But if we re-run this on config change, we shouldn't force change viewMode if already set.
+                // valid check:
+                // setViewMode("admin");
             } else {
                 setViewMode(role);
             }

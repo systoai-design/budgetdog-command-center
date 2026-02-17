@@ -18,5 +18,23 @@ export async function initDb() {
             notes TEXT,
             timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
         )
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    `);
+
+    await db.execute(`
+        CREATE TABLE IF NOT EXISTS super_admins (
+            email TEXT PRIMARY KEY,
+            added_by TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    `);
+
+    await db.execute(`
+        CREATE TABLE IF NOT EXISTS allowed_domains (
+            domain TEXT PRIMARY KEY,
+            added_by TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
     `);
 }
