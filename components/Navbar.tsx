@@ -25,7 +25,7 @@ export default function Navbar() {
 
                         <div className="flex items-center gap-8">
                             <div className="flex-shrink-0 flex items-center gap-2">
-                                <span className="text-xl font-bold text-gray-900 dark:text-white">BudgetDog <span className="text-primary">Command Center</span></span>
+                                <span className="text-xl font-bold text-gray-900 dark:text-white">BudgetDog <span className="text-primary">Tax Command Center</span></span>
                             </div>
 
                             <div className="hidden md:flex space-x-4">

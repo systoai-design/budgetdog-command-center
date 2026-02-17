@@ -16,9 +16,23 @@ export async function initDb() {
             category TEXT NOT NULL,
             duration INTEGER NOT NULL,
             notes TEXT,
-            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+            user_email TEXT,
+            status TEXT DEFAULT 'approved' -- 'approved', 'pending'
         )
     `);
+
+    try {
+        await db.execute("ALTER TABLE time_entries ADD COLUMN user_email TEXT");
+    } catch (error) {
+        // Ignore error if column already exists
+    }
+
+    try {
+        await db.execute("ALTER TABLE time_entries ADD COLUMN status TEXT DEFAULT 'approved'");
+    } catch (error) {
+        // Ignore error if column already exists
+    }
 
     await db.execute(`
         CREATE TABLE IF NOT EXISTS super_admins (

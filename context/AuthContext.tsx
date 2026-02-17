@@ -124,11 +124,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
             // Set initial view mode
             if (isSuperAdmin) {
-                // If they were already in a specific mode, maybe keep it?
-                // For now, default to admin view on fresh load is fine.
-                // But if we re-run this on config change, we shouldn't force change viewMode if already set.
-                // valid check:
-                // setViewMode("admin");
+                // Default to admin view for super admins ensures they see the dropdown
+                setViewMode("admin");
             } else {
                 setViewMode(role);
             }

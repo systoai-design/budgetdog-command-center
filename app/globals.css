@@ -5,14 +5,14 @@
 
 :root {
   /* Light Mode */
-  --color-primary: #FBBF24;
-  /* Amber-400 */
-  --color-primary-dark: #D97706;
-  --color-primary-hover: #FFD54F;
+  --color-primary: #CAA91E;
+  /* Amber-400 -> Gold */
+  --color-primary-dark: #B08D1A;
+  --color-primary-hover: #D4B225;
 
   --color-background-light: #F3F4F6;
   /* Gray-100 */
-  --color-background-dark: #0A0A0A;
+  --color-background-dark: #151515;
   /* Near black */
 
   --color-surface-light: #FFFFFF;

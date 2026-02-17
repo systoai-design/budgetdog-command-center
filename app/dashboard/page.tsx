@@ -10,7 +10,7 @@ import { Tab, TabsList } from "@/components/Tabs";
 import { Clock, TrendingUp, BarChart3, LayoutDashboard } from "lucide-react";
 
 export default function Dashboard() {
-    const { user } = useAuth();
+    const { user, viewMode } = useAuth();
     const router = useRouter();
     const [activeTab, setActiveTab] = useState<"time" | "capacity" | "actuals">("capacity");
 
@@ -18,8 +18,14 @@ export default function Dashboard() {
         if (!user) {
             router.push("/");
         }
-        // Everyone is admin now, so they can see both. Defaulting to Capacity Planner.
     }, [user, router]);
+
+    // Redirect if on capacity tab but not in admin view
+    useEffect(() => {
+        if (viewMode !== "admin" && activeTab === "capacity") {
+            setActiveTab("time");
+        }
+    }, [viewMode, activeTab]);
 
     if (!user) return null;
 
@@ -39,13 +45,15 @@ export default function Dashboard() {
                 </div>
 
                 <TabsList>
-                    <Tab
-                        label="Capacity Planner"
-                        value="capacity"
-                        isActive={activeTab === "capacity"}
-                        onClick={() => setActiveTab("capacity")}
-                        icon={TrendingUp}
-                    />
+                    {viewMode === "admin" && (
+                        <Tab
+                            label="Capacity Planner"
+                            value="capacity"
+                            isActive={activeTab === "capacity"}
+                            onClick={() => setActiveTab("capacity")}
+                            icon={TrendingUp}
+                        />
+                    )}
                     <Tab
                         label="Time Tracker"
                         value="time"
@@ -65,7 +73,7 @@ export default function Dashboard() {
 
             <main className="max-w-7xl mx-auto pb-12">
                 {activeTab === "time" && <TimeTracker />}
-                {activeTab === "capacity" && <HiringSimulator />}
+                {activeTab === "capacity" && viewMode === "admin" && <HiringSimulator />}
                 {activeTab === "actuals" && <ActualsDashboard />}
             </main>
         </div>

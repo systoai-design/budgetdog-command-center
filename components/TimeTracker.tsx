@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Plus, Clock, FileText, Trash2, Calendar, Tag, User } from "lucide-react";
+import React, { useState, useEffect, useCallback } from "react";
+import { Calendar, Clock, Save, RefreshCw, User, ChevronLeft, ChevronRight, FileText, Edit2, Trash2, CheckCircle, AlertCircle, X } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -10,23 +10,48 @@ function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
 
-const CHARGE_CODES = [
+const ADVISOR_CODES = [
     "Call Prep - Kick Off Call",
     "Kick Off Live Call",
+    "Kick Off Call Follow Up Questions",
     "Call Prep - Deep Dive Call",
     "Deep Dive Live Call",
+    "Deep Dive Call Follow Up Questions",
     "Call Prep - Tax Projection Call",
     "Tax Projection Live Call",
+    "Tax Projection Call Follow Up Questions",
+    "Call Prep - Check In Call",
+    "Check In Live Call",
+    "Check In Call Follow Up Questions",
+    "Weekly SKOOL Member Call",
+    "Admin/Other",
+];
+
+const SUPPORT_CODES = [
+    "Call Prep - Kick Off Call",
+    "Kick Off Call Follow Up Questions",
+    "Kick Off Call Recording/Summary/Notes Sent to Client",
+    "Call Prep - Deep Dive Call",
+    "Deep Dive Call Follow Up Questions",
+    "Deep Dive Call Recording/Summary/Notes Sent to Client",
+    "Call Prep - Tax Projection Call",
+    "Tax Projection Call Follow Up Questions",
+    "Tax Projection Call Recording/Summary/Notes Sent to Client",
+    "Call Prep - Check In Call",
+    "Check In Call Follow Up Questions",
+    "Check In Call Recording/Summary/Notes Sent to Client",
     "Admin/Other",
 ];
 
 interface TimeEntry {
     id: string;
-    chargeCode: string;
-    category: "advisor" | "support";
+    charge_code: string;
+    category: "advisor" | "support" | "admin";
     duration: number; // in minutes
     notes: string;
-    timestamp: Date;
+    timestamp: string; // ISO string
+    user_email?: string;
+    status?: "approved" | "pending";
 }
 
 const Card = ({
@@ -46,397 +71,502 @@ const Card = ({
     </div>
 );
 
-export default function TimeTracker() {
-    const { user, viewMode } = useAuth();
-    const [entries, setEntries] = useState<TimeEntry[]>([]);
-    const [chargeCode, setChargeCode] = useState(CHARGE_CODES[0]);
-
-    // Auto-select category based on viewMode (for Super Admins) or role
-    const category = viewMode === "support" ? "support" : "advisor";
-
-    // Date Input State
-    const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-
-    // Filter State
-    const [startDate, setStartDate] = useState(() => {
-        const d = new Date();
-        d.setDate(d.getDate() - 30);
-        return d.toISOString().split('T')[0];
-    });
-    const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
-
-    // Duration split
-    const [hours, setHours] = useState("");
-    const [minutes, setMinutes] = useState("");
-    const [seconds, setSeconds] = useState("");
-
+// Edit Modal Component
+const EditModal = ({
+    isOpen,
+    onClose,
+    entry,
+    onSave
+}: {
+    isOpen: boolean;
+    onClose: () => void;
+    entry: TimeEntry | null;
+    onSave: (id: string, updates: Partial<TimeEntry>) => Promise<void>;
+}) => {
+    const [hours, setHours] = useState(0);
+    const [minutes, setMinutes] = useState(0);
     const [notes, setNotes] = useState("");
 
-    // Load entries from API
     useEffect(() => {
-        const fetchEntries = async () => {
-            try {
-                const res = await fetch("/api/time-entries");
-                const data = await res.json();
-                // Map snake_case to camelCase
-                const mappedData = data.map((entry: any) => ({
-                    id: entry.id,
-                    chargeCode: entry.charge_code,
-                    category: entry.category,
-                    duration: entry.duration,
-                    notes: entry.notes,
-                    timestamp: new Date(entry.timestamp),
-                }));
-                setEntries(mappedData);
-            } catch (error) {
-                console.error("Failed to load entries:", error);
-            }
-        };
-        fetchEntries();
-    }, []);
+        if (entry) {
+            setHours(Math.floor(entry.duration / 60));
+            setMinutes(entry.duration % 60);
+            setNotes(entry.notes || "");
+        }
+    }, [entry]);
+
+    if (!isOpen || !entry) return null;
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        const totalMinutes = (hours * 60) + minutes;
+        if (totalMinutes === 0) return alert("Duration cannot be zero");
 
-        // Calculate total minutes
-        const h = Number(hours) || 0;
-        const m = Number(minutes) || 0;
-        const s = Number(seconds) || 0;
-        const totalDurationMinutes = (h * 60) + m + (s / 60);
+        await onSave(entry.id, {
+            duration: totalMinutes,
+            notes
+        });
+        onClose();
+    };
 
-        if (totalDurationMinutes <= 0) return;
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+            <Card className="w-full max-w-md p-6 relative bg-white dark:bg-zinc-900">
+                <button onClick={onClose} className="absolute right-4 top-4 text-gray-500 hover:text-gray-900 dark:hover:text-white">
+                    <X size={20} />
+                </button>
+                <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Edit Entry</h2>
+                <div className="mb-4">
+                    <p className="text-sm font-bold text-gray-500 uppercase">Charge Code</p>
+                    <p className="text-gray-900 dark:text-white font-medium">{entry.charge_code}</p>
+                </div>
 
-        // Combine selected date with current time for more precision if needed, 
-        // or just set to noon to avoid timezone issues for simple date logging
-        const entryDate = new Date(date);
-        const now = new Date();
-        entryDate.setHours(now.getHours(), now.getMinutes(), now.getSeconds());
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="flex gap-4">
+                        <div className="flex-1">
+                            <label className="text-xs font-bold text-gray-500 uppercase block mb-1">Hours</label>
+                            <input
+                                type="number" min="0"
+                                value={hours} onChange={e => setHours(parseInt(e.target.value) || 0)}
+                                className="w-full p-2 rounded-lg border dark:bg-zinc-800 dark:border-zinc-700 dark:text-white"
+                            />
+                        </div>
+                        <div className="flex-1">
+                            <label className="text-xs font-bold text-gray-500 uppercase block mb-1">Minutes</label>
+                            <input
+                                type="number" min="0" max="59"
+                                value={minutes} onChange={e => setMinutes(parseInt(e.target.value) || 0)}
+                                className="w-full p-2 rounded-lg border dark:bg-zinc-800 dark:border-zinc-700 dark:text-white"
+                            />
+                        </div>
+                    </div>
+                    <div>
+                        <label className="text-xs font-bold text-gray-500 uppercase block mb-1">Notes</label>
+                        <textarea
+                            rows={3}
+                            value={notes} onChange={e => setNotes(e.target.value)}
+                            className="w-full p-2 rounded-lg border dark:bg-zinc-800 dark:border-zinc-700 dark:text-white resize-none"
+                        />
+                    </div>
+                    <div className="pt-2">
+                        <button type="submit" className="w-full bg-primary hover:bg-primary-hover text-black font-bold py-3 rounded-lg transition-colors">
+                            Save Changes & Request Approval
+                        </button>
+                    </div>
+                </form>
+            </Card>
+        </div>
+    );
+};
 
-        const newEntry: TimeEntry = {
-            id: Math.random().toString(36).substr(2, 9),
-            chargeCode,
-            category,
-            duration: Number(totalDurationMinutes.toFixed(2)),
-            notes,
-            timestamp: entryDate,
-        };
+export default function TimeTracker() {
+    const { user, viewMode } = useAuth();
 
+    // Config
+    const isAdvisor = viewMode === "advisor";
+    const currentCodes = isAdvisor ? ADVISOR_CODES : SUPPORT_CODES;
+
+    // State
+    const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [entries, setEntries] = useState<TimeEntry[]>([]); // All entries for list
+
+    // Grid State
+    const [gridState, setGridState] = useState<Record<string, { hours: number, minutes: number, id?: string, notes?: string }>>({});
+
+    // Modal State
+    const [editingEntry, setEditingEntry] = useState<TimeEntry | null>(null);
+
+    // Fetch entries
+    const fetchEntries = useCallback(async () => {
+        if (!user) return;
+        setIsLoading(true);
+        try {
+            let url = "/api/time-entries";
+            const params = new URLSearchParams();
+
+            // View Mode Logic:
+            // If Super Admin viewing "Admin" mode -> See ALL entries (for approval/review)
+            // If Super Admin viewing "Advisor/Support" -> See THEIR OWN entries (simulating user)
+            // If Regular User -> See THEIR OWN entries
+
+            if (user.isSuperAdmin && viewMode === "admin") {
+                params.append("admin", "true");
+            } else {
+                params.append("email", user.email);
+            }
+
+            const res = await fetch(`${url}?${params.toString()}`);
+            const data = await res.json();
+            setEntries(data); // Store all fetched entries for the list
+
+            // Filter for Grid Population (Current Day Only, My Entries Only)
+            // We only populate grid with user's own entries for the selected date
+            const myEntries = data.filter((e: any) => e.user_email === user.email);
+            const dayEntries = myEntries.filter((e: any) => {
+                const entryDate = new Date(e.timestamp).toISOString().split('T')[0];
+                return entryDate === selectedDate;
+            });
+
+            // Populate grid
+            const newGrid: typeof gridState = {};
+            currentCodes.forEach(code => {
+                const entry = dayEntries.find((e: any) => e.charge_code === code);
+                if (entry) {
+                    newGrid[code] = {
+                        hours: Math.floor(entry.duration / 60),
+                        minutes: entry.duration % 60,
+                        id: entry.id,
+                        notes: entry.notes || ""
+                    };
+                } else {
+                    newGrid[code] = { hours: 0, minutes: 0, notes: "" };
+                }
+            });
+            setGridState(newGrid);
+
+        } catch (error) {
+            console.error("Failed to load entries", error);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [user, selectedDate, currentCodes, viewMode]);
+
+    useEffect(() => {
+        fetchEntries();
+    }, [fetchEntries]);
+
+    // Handle Input Change (Grid)
+    const handleInputChange = (code: string, field: "hours" | "minutes", value: string) => {
+        const num = Math.max(0, parseInt(value) || 0);
+        setGridState(prev => ({
+            ...prev,
+            [code]: { ...prev[code], [field]: num }
+        }));
+    };
+
+    const handleNotesChange = (code: string, value: string) => {
+        setGridState(prev => ({
+            ...prev,
+            [code]: { ...prev[code], notes: value }
+        }));
+    };
+
+    // Save All (Grid)
+    const handleSave = async () => {
+        setIsSaving(true);
+        try {
+            for (const code of currentCodes) {
+                const state = gridState[code];
+                if (!state) continue;
+
+                const totalMinutes = (state.hours * 60) + state.minutes;
+                const category = viewMode;
+                const entryDate = new Date(selectedDate);
+                const now = new Date();
+                entryDate.setHours(now.getHours(), now.getMinutes(), now.getSeconds());
+
+                if (state.id) {
+                    // Updating from Grid -> Delete & Recreate (Legacy logic for Grid)
+                    // Wait, if we use Grid to update, does it trigger approval?
+                    // "Daily Log" usually implies "I'm entering my day".
+                    // If I change it 5 mins later, is that an "edit"?
+                    // Let's assume Grid Save = "New/Correction" that is Auto-Approved for now (since it's 'today'),
+                    // unless we want strict strict.
+                    // Let's keep Grid Save as 'approved' (standard flow).
+                    // Only "Edit List" triggers pending.
+
+                    if (totalMinutes === 0) {
+                        await fetch(`/api/time-entries?id=${state.id}`, { method: "DELETE" });
+                    } else {
+                        // We can iterate the Grid Save to be smart:
+                        // If ID exists, use PUT? No, Grid is bulk. simpler to Delete/Insert or just Insert.
+                        // Let's stick to current logic: Delete then Create New (Approved).
+                        await fetch(`/api/time-entries?id=${state.id}`, { method: "DELETE" });
+
+                        await fetch("/api/time-entries", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                id: crypto.randomUUID(),
+                                chargeCode: code,
+                                category,
+                                duration: totalMinutes,
+                                notes: state.notes,
+                                timestamp: entryDate.toISOString(),
+                                userEmail: user?.email,
+                                status: 'approved' // Grid logs are approved
+                            }),
+                        });
+                    }
+                } else if (totalMinutes > 0) {
+                    // Create New
+                    await fetch("/api/time-entries", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            id: crypto.randomUUID(),
+                            chargeCode: code,
+                            category,
+                            duration: totalMinutes,
+                            notes: state.notes,
+                            timestamp: entryDate.toISOString(),
+                            userEmail: user?.email,
+                            status: 'approved'
+                        }),
+                    });
+                }
+            }
+            await fetchEntries();
+            alert("Time saved successfully!");
+        } catch (error) {
+            console.error("Failed to save", error);
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    // Edit Log Entry
+    const handleEditSave = async (id: string, updates: Partial<TimeEntry>) => {
         try {
             await fetch("/api/time-entries", {
-                method: "POST",
+                method: "PUT",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(newEntry),
+                body: JSON.stringify({
+                    id,
+                    ...updates,
+                    status: 'pending' // Edits trigger pending
+                }),
             });
-            setEntries([newEntry, ...entries]);
-            // Reset fields but keep date
-            setHours("");
-            setMinutes("");
-            setSeconds("");
-            setNotes("");
+            await fetchEntries();
         } catch (error) {
-            console.error("Failed to save entry:", error);
+            console.error("Failed to edit", error);
+            alert("Failed to update entry");
+        }
+    };
+
+    // Approve Entry
+    const handleApprove = async (id: string) => {
+        try {
+            await fetch("/api/time-entries", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    id,
+                    status: 'approved'
+                }),
+            });
+            await fetchEntries();
+        } catch (error) {
+            console.error("Failed to approve", error);
         }
     };
 
     const handleDelete = async (id: string) => {
-        try {
-            await fetch(`/api/time-entries/${id}`, { method: "DELETE" });
-            setEntries(entries.filter((e) => e.id !== id));
-        } catch (error) {
-            console.error("Failed to delete entry:", error);
-        }
+        if (!confirm("Are you sure? This cannot be undone.")) return;
+        await fetch(`/api/time-entries?id=${id}`, { method: "DELETE" });
+        await fetchEntries();
     };
 
-    // Filter entries for display based on viewMode and Date Range
-    const visibleEntries = entries.filter(entry => {
-        // 1. Filter by View Mode
-        const matchesCategory = viewMode === 'admin' || entry.category === viewMode;
+    // Render Logic
+    const dailyTotalMinutes = Object.values(gridState).reduce((acc, curr) => acc + (curr?.hours || 0) * 60 + (curr?.minutes || 0), 0);
+    const dailyTotalHours = (dailyTotalMinutes / 60).toFixed(1);
 
-        // 2. Filter by Date Range
-        const entryDate = new Date(entry.timestamp).toISOString().split('T')[0];
-        const matchesDate = entryDate >= startDate && entryDate <= endDate;
+    const changeDate = (days: number) => {
+        const date = new Date(selectedDate);
+        date.setDate(date.getDate() + days);
+        setSelectedDate(date.toISOString().split('T')[0]);
+    };
 
-        return matchesCategory && matchesDate;
+    // Sort entries for List: Pending first, then recent
+    const sortedEntries = [...entries].sort((a, b) => {
+        if (a.status === 'pending' && b.status !== 'pending') return -1;
+        if (a.status !== 'pending' && b.status === 'pending') return 1;
+        return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
     });
 
-    const handleExport = () => {
-        const headers = ["ID", "Timestamp", "Charge Code", "Category", "Duration (min)", "Notes"];
-        const csvContent = [
-            headers.join(","),
-            ...visibleEntries.map(e => [
-                e.id,
-                e.timestamp.toISOString(),
-                `"${e.chargeCode}"`,
-                e.category,
-                e.duration,
-                `"${e.notes || ''}"`
-            ].join(","))
-        ].join("\n");
-
-        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.setAttribute("href", url);
-        link.setAttribute("download", `time_entries_${startDate}_to_${endDate}.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    };
-
-    const totalMinutes = entries.reduce((acc, curr) => acc + curr.duration, 0);
-    const totalHours = (totalMinutes / 60).toFixed(1);
-
     return (
-        <Card className="p-0 overflow-hidden h-full flex flex-col">
-            <div className="p-6 border-b border-border-light dark:border-border-dark flex justify-between items-center bg-gray-50/50 dark:bg-zinc-900/50">
-                <div className="flex items-center gap-2">
-                    <div className="p-2 bg-primary/10 rounded-lg text-primary">
-                        <Clock size={20} />
-                    </div>
-                    <div>
-                        <h2 className="text-lg font-bold text-gray-900 dark:text-white">Time Tracker</h2>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Log your active client work</p>
-                    </div>
+        <div className="max-w-5xl mx-auto space-y-8 pb-20">
+            {/* Header / Controls */}
+            <div className="flex flex-col md:flex-row justify-between items-center gap-6 sticky top-20 z-30 bg-background dark:bg-background py-4 border-b border-border-light dark:border-border-dark">
+                <div>
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Time Tracker</h1>
+                    <p className="text-gray-500 text-sm">
+                        Logging as <span className="font-bold uppercase text-primary">{viewMode}</span>
+                    </p>
                 </div>
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-background-light dark:bg-background-dark rounded-full border border-border-light dark:border-border-dark">
-                    <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
-                    <span className="text-sm font-bold text-gray-700 dark:text-gray-200">{totalHours} hrs</span>
-                    <span className="text-xs text-gray-400">total</span>
+
+                <div className="flex items-center gap-4 bg-surface-light dark:bg-surface-dark p-2 rounded-xl shadow-sm border border-border-light dark:border-border-dark">
+                    <button onClick={() => changeDate(-1)} className="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg text-gray-500">
+                        <ChevronLeft size={20} />
+                    </button>
+                    <div className="flex items-center gap-2 px-2">
+                        <Calendar size={18} className="text-primary" />
+                        <input
+                            type="date"
+                            value={selectedDate}
+                            onChange={(e) => setSelectedDate(e.target.value)}
+                            className="bg-transparent font-bold text-gray-900 dark:text-white outline-none cursor-pointer"
+                        />
+                    </div>
+                    <button onClick={() => changeDate(1)} className="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg text-gray-500">
+                        <ChevronRight size={20} />
+                    </button>
+                </div>
+
+                <div className="flex items-center gap-6">
+                    <div className="text-right hidden sm:block">
+                        <div className="text-xs uppercase font-bold text-gray-500">Daily Total</div>
+                        <div className="text-2xl font-bold font-mono text-gray-900 dark:text-white">
+                            {dailyTotalHours} <span className="text-sm font-sans font-normal text-gray-500">hrs</span>
+                        </div>
+                    </div>
+                    <button
+                        onClick={handleSave}
+                        disabled={isSaving || isLoading}
+                        className="bg-primary hover:bg-primary-hover text-black font-bold py-3 px-6 rounded-xl shadow-lg shadow-primary/20 transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2"
+                    >
+                        {isSaving ? <RefreshCw className="animate-spin" size={20} /> : <Save size={20} />}
+                        {isSaving ? "Saving..." : "Save Daily Log"}
+                    </button>
                 </div>
             </div>
 
-            <div className="p-6 grid grid-cols-1 xl:grid-cols-3 gap-8">
-                {/* Left: Input Form */}
-                <div className="xl:col-span-1 space-y-6">
-                    <form onSubmit={handleSubmit} className="space-y-5">
-                        {/* Role Badge */}
-                        <div className="flex flex-col gap-1.5">
-                            <label className="text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-400 flex items-center gap-1.5">
-                                <User size={12} /> Work Category
-                            </label>
-                            <div className={cn(
-                                "flex items-center gap-2 px-4 py-3 rounded-lg border text-sm font-medium",
-                                category === "advisor"
-                                    ? "bg-blue-50/50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800/30 text-blue-700 dark:text-blue-300"
-                                    : "bg-purple-50/50 dark:bg-purple-900/10 border-purple-200 dark:border-purple-800/30 text-purple-700 dark:text-purple-300"
-                            )}>
-                                <span className={cn("w-2 h-2 rounded-full", category === "advisor" ? "bg-blue-500" : "bg-purple-500")}></span>
-                                {category === "advisor" ? "Advisor" : "Support / Admin"} (Auto-Selected)
-                            </div>
-                        </div>
-
-                        {/* Date Input */}
-                        <div className="flex flex-col gap-1.5">
-                            <label className="text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-400 flex items-center gap-1.5">
-                                <Calendar size={12} /> Date
-                            </label>
+            {/* Grid */}
+            <div className="space-y-3">
+                {currentCodes.map((code) => (
+                    <Card key={code} className="p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4 hover:border-primary/30 transition-colors">
+                        <div className="flex-1 w-full">
+                            <h3 className="font-bold text-gray-900 dark:text-white text-sm sm:text-base">{code}</h3>
                             <input
-                                type="date"
-                                value={date}
-                                onChange={(e) => setDate(e.target.value)}
-                                className="w-full bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark rounded-lg p-3 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-zinc-600"
-                                required
+                                type="text"
+                                placeholder="Add notes (optional)..."
+                                value={gridState[code]?.notes || ""}
+                                onChange={(e) => handleNotesChange(code, e.target.value)}
+                                className="w-full mt-2 bg-transparent text-sm text-gray-500 placeholder:text-gray-600 dark:placeholder:text-zinc-600 border-b border-transparent focus:border-border-light dark:focus:border-border-dark outline-none transition-colors"
                             />
                         </div>
 
-                        {/* Duration Inputs */}
-                        <div className="flex flex-col gap-1.5">
-                            <label className="text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-400 flex items-center gap-1.5">
-                                <Clock size={12} /> Duration
-                            </label>
-                            <div className="grid grid-cols-3 gap-2">
-                                <div>
-                                    <label className="text-[10px] uppercase font-bold text-gray-600 dark:text-gray-400 mb-1 block">Hours</label>
-                                    <input
-                                        type="number"
-                                        value={hours}
-                                        onChange={(e) => setHours(e.target.value)}
-                                        placeholder="0"
-                                        min="0"
-                                        className="w-full bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark rounded-lg p-3 text-center text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-zinc-600 font-mono text-lg"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="text-[10px] uppercase font-bold text-gray-600 dark:text-gray-400 mb-1 block">Minutes</label>
-                                    <input
-                                        type="number"
-                                        value={minutes}
-                                        onChange={(e) => setMinutes(e.target.value)}
-                                        placeholder="0"
-                                        min="0"
-                                        className="w-full bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark rounded-lg p-3 text-center text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-zinc-600 font-mono text-lg"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="text-[10px] uppercase font-bold text-gray-600 dark:text-gray-400 mb-1 block">Seconds</label>
-                                    <input
-                                        type="number"
-                                        value={seconds}
-                                        onChange={(e) => setSeconds(e.target.value)}
-                                        placeholder="0"
-                                        min="0"
-                                        className="w-full bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark rounded-lg p-3 text-center text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-zinc-600 font-mono text-lg"
-                                    />
-                                </div>
+                        <div className="flex items-center gap-3 w-full sm:w-auto justify-end bg-gray-50 dark:bg-zinc-800/50 p-2 rounded-lg">
+                            <div className="flex flex-col items-center">
+                                <input
+                                    type="number"
+                                    min="0"
+                                    placeholder="0"
+                                    value={gridState[code]?.hours || ""}
+                                    onChange={(e) => handleInputChange(code, "hours", e.target.value)}
+                                    className="w-16 h-10 text-center text-lg font-bold bg-white dark:bg-zinc-800 rounded-lg border border-gray-200 dark:border-zinc-700 outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                                />
+                                <span className="text-[9px] uppercase font-bold text-gray-400 mt-0.5">Hours</span>
+                            </div>
+                            <span className="text-xl font-bold text-gray-300 dark:text-zinc-600 pb-3">:</span>
+                            <div className="flex flex-col items-center">
+                                <input
+                                    type="number"
+                                    min="0"
+                                    max="59"
+                                    placeholder="0"
+                                    value={gridState[code]?.minutes || ""}
+                                    onChange={(e) => handleInputChange(code, "minutes", e.target.value)}
+                                    className="w-16 h-10 text-center text-lg font-bold bg-white dark:bg-zinc-800 rounded-lg border border-gray-200 dark:border-zinc-700 outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                                />
+                                <span className="text-[9px] uppercase font-bold text-gray-400 mt-0.5">Mins</span>
                             </div>
                         </div>
-
-                        {/* Charge Code */}
-                        <div className="flex flex-col gap-1.5">
-                            <label className="text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-400 flex items-center gap-1.5">
-                                <Tag size={12} /> Charge Code
-                            </label>
-                            <select
-                                value={chargeCode}
-                                onChange={(e) => setChargeCode(e.target.value)}
-                                className="w-full bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark rounded-lg p-3 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all cursor-pointer"
-                            >
-                                {CHARGE_CODES.map((code) => (
-                                    <option key={code} value={code}>
-                                        {code}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-
-                        {/* Notes */}
-                        <div className="flex flex-col gap-1.5">
-                            <label className="text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-400 flex items-center gap-1.5">
-                                <FileText size={12} /> Notes
-                            </label>
-                            <textarea
-                                value={notes}
-                                onChange={(e) => setNotes(e.target.value)}
-                                placeholder="Details about this task..."
-                                rows={3}
-                                className="w-full bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark rounded-lg p-3 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-zinc-600 resize-none"
-                            />
-                        </div>
-
-                        <button
-                            type="submit"
-                            className="w-full bg-primary hover:bg-primary-hover text-black font-bold py-3.5 rounded-lg transition-all shadow-lg shadow-primary/20 hover:shadow-primary/40 active:scale-[0.98] flex items-center justify-center gap-2 text-sm uppercase tracking-wide"
-                        >
-                            <Plus size={18} strokeWidth={3} />
-                            Log Entry
-                        </button>
-                    </form>
-                </div>
-
-                {/* Right: History Log */}
-                <div className="xl:col-span-2 flex flex-col h-full bg-background-light dark:bg-background-dark rounded-xl border border-border-light dark:border-border-dark overflow-hidden">
-                    <div className="px-4 py-3 border-b border-border-light dark:border-border-dark bg-gray-50/50 dark:bg-zinc-900/30 flex flex-col sm:flex-row justify-between items-center gap-4">
-                        <div className="flex items-center gap-2 text-xs font-medium text-gray-600 dark:text-gray-400">
-                            <Calendar size={14} />
-                            Recent Activity
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                            {/* Date Range Filter */}
-                            <div className="flex items-center gap-2 bg-white dark:bg-zinc-800 rounded-lg p-1 border border-border-light dark:border-border-dark shadow-sm">
-                                <div className="flex items-center gap-1 px-2">
-                                    <span className="text-[10px] uppercase font-bold text-gray-400">From</span>
-                                    <input
-                                        type="date"
-                                        value={startDate}
-                                        onChange={(e) => setStartDate(e.target.value)}
-                                        className="bg-transparent text-xs text-gray-700 dark:text-gray-200 outline-none w-24 cursor-pointer"
-                                    />
-                                </div>
-                                <div className="w-px h-4 bg-border-light dark:bg-border-dark"></div>
-                                <div className="flex items-center gap-1 px-2">
-                                    <span className="text-[10px] uppercase font-bold text-gray-400">To</span>
-                                    <input
-                                        type="date"
-                                        value={endDate}
-                                        onChange={(e) => setEndDate(e.target.value)}
-                                        className="bg-transparent text-xs text-gray-700 dark:text-gray-200 outline-none w-24 cursor-pointer"
-                                    />
-                                </div>
-                            </div>
-
-                            <button
-                                onClick={handleExport}
-                                className="text-xs text-primary hover:text-primary-hover font-medium flex items-center gap-1 ml-2"
-                            >
-                                Export CSV
-                            </button>
-                        </div>
-                    </div>
-
-                    <div className="flex-1 overflow-y-auto max-h-[500px] p-0 custom-scrollbar">
-                        {visibleEntries.length === 0 ? (
-                            <div className="h-64 flex flex-col items-center justify-center text-gray-400 dark:text-zinc-600 gap-4">
-                                <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-zinc-800 flex items-center justify-center">
-                                    <FileText size={24} className="opacity-50" />
-                                </div>
-                                <p className="text-sm">No recent time entries found.</p>
-                            </div>
-                        ) : (
-                            <table className="w-full text-left text-sm border-collapse">
-                                <thead className="bg-gray-50 dark:bg-zinc-900/50 text-gray-600 dark:text-gray-400 sticky top-0 z-10 text-xs uppercase tracking-wider">
-                                    <tr>
-                                        <th className="p-4 font-semibold border-b border-border-light dark:border-border-dark">Date/Time</th>
-                                        <th className="p-4 font-semibold border-b border-border-light dark:border-border-dark">Client / Task</th>
-                                        <th className="p-4 font-semibold border-b border-border-light dark:border-border-dark">Notes</th>
-                                        <th className="p-4 font-semibold border-b border-border-light dark:border-border-dark">Role</th>
-                                        <th className="p-4 font-semibold border-b border-border-light dark:border-border-dark">Duration</th>
-                                        <th className="p-4 font-semibold text-right border-b border-border-light dark:border-border-dark"></th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-border-light dark:divide-border-dark">
-                                    {visibleEntries.map((entry) => (
-                                        <tr key={entry.id} className="group hover:bg-gray-50 dark:hover:bg-zinc-800/30 transition-colors">
-                                            <td className="p-4 whitespace-nowrap text-gray-600 dark:text-gray-400 text-xs">
-                                                <div className="font-medium text-gray-700 dark:text-gray-300">{entry.timestamp.toLocaleDateString()}</div>
-                                                <div>{entry.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-                                            </td>
-                                            <td className="p-4">
-                                                <div className="font-medium text-gray-900 dark:text-white mb-0.5">{entry.chargeCode}</div>
-                                            </td>
-                                            <td className="p-4 text-gray-600 dark:text-gray-400 max-w-[150px] truncate" title={entry.notes}>
-                                                {entry.notes || "-"}
-                                            </td>
-                                            <td className="p-4">
-                                                <span className={cn("inline-flex items-center px-2 py-0.5 rounded text-[10px] uppercase font-bold border",
-                                                    entry.category === 'advisor'
-                                                        ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-800/30"
-                                                        : "bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 border-purple-100 dark:border-purple-800/30"
-                                                )}>
-                                                    {entry.category}
-                                                </span>
-                                            </td>
-                                            <td className="p-4 font-mono text-gray-700 dark:text-gray-300">
-                                                {formatDuration(entry.duration)}
-                                            </td>
-                                            <td className="p-4 text-right">
-                                                <button
-                                                    onClick={() => handleDelete(entry.id)}
-                                                    className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
-                                                    title="Delete Entry"
-                                                >
-                                                    <Trash2 size={14} />
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        )}
-                    </div>
-                </div>
+                    </Card>
+                ))}
             </div>
-        </Card>
-    );
-}
 
-function formatDuration(totalMinutes: number): string {
-    const hours = Math.floor(totalMinutes / 60);
-    const minutes = Math.floor(totalMinutes % 60);
-    // Optional: if we want seconds, we need to store them more precisely or calculate remainder
-    // For now, let's show Hh Mm
-    if (hours > 0) {
-        return `${hours}h ${minutes}m`;
-    }
-    return `${minutes}m`;
+            {/* List / Log */}
+            <div className="pt-8 border-t border-border-light dark:border-border-dark">
+                <h3 className="text-xl font-bold mb-6 text-gray-900 dark:text-white flex items-center gap-2">
+                    <FileText size={24} className="text-primary" />
+                    Entry Log
+                </h3>
+
+                {sortedEntries.length === 0 ? (
+                    <div className="text-center py-10 opacity-50 bg-gray-50 dark:bg-zinc-800/50 rounded-xl">
+                        <p className="text-gray-500">No entries found.</p>
+                    </div>
+                ) : (
+                    <div className="space-y-3">
+                        {sortedEntries.map(entry => (
+                            <div key={entry.id} className={cn(
+                                "group bg-surface-light dark:bg-surface-dark border p-4 rounded-xl flex flex-col sm:flex-row gap-4 sm:items-center relative overflow-hidden",
+                                entry.status === 'pending'
+                                    ? "border-yellow-500/50 bg-yellow-50 dark:bg-yellow-900/10"
+                                    : "border-border-light dark:border-border-dark hover:border-primary/30"
+                            )}>
+                                {entry.status === 'pending' && (
+                                    <div className="absolute top-0 right-0 bg-yellow-500 text-black text-[10px] uppercase font-bold px-2 py-0.5 rounded-bl-lg flex items-center gap-1">
+                                        <AlertCircle size={10} /> Pending Approval
+                                    </div>
+                                )}
+
+                                <div className="flex-1 space-y-1">
+                                    <div className="flex items-center gap-2 flex-wrap text-xs">
+                                        <span className="font-bold text-gray-500">{new Date(entry.timestamp).toLocaleDateString()}</span>
+                                        {entry.user_email && (
+                                            <span className="bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-400 px-1.5 py-0.5 rounded flex items-center gap-1">
+                                                <User size={10} /> {entry.user_email.split('@')[0]}
+                                            </span>
+                                        )}
+                                        <span className="bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-400 px-1.5 py-0.5 rounded uppercase">{entry.category}</span>
+                                    </div>
+                                    <div className="font-bold text-gray-900 dark:text-white">{entry.charge_code}</div>
+                                    {entry.notes && <div className="text-sm text-gray-500 italic">"{entry.notes}"</div>}
+                                </div>
+
+                                <div className="flex items-center gap-4 justify-between sm:justify-end w-full sm:w-auto">
+                                    <div className="text-lg font-mono font-bold">
+                                        {Math.floor(entry.duration / 60)}<span className="text-xs text-gray-400 mx-1">h</span>
+                                        {entry.duration % 60}<span className="text-xs text-gray-400">m</span>
+                                    </div>
+
+                                    <div className="flex items-center gap-1">
+                                        {/* Admin Approval Button */}
+                                        {user?.isSuperAdmin && entry.status === 'pending' && (
+                                            <button
+                                                onClick={() => handleApprove(entry.id)}
+                                                className="p-2 bg-green-500/10 text-green-600 hover:bg-green-500/20 rounded-lg transition-colors"
+                                                title="Approve"
+                                            >
+                                                <CheckCircle size={18} />
+                                            </button>
+                                        )}
+
+                                        {/* Edit Button */}
+                                        <button
+                                            onClick={() => setEditingEntry(entry)}
+                                            className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                                            title="Edit"
+                                        >
+                                            <Edit2 size={16} />
+                                        </button>
+
+                                        {/* Delete Button */}
+                                        <button
+                                            onClick={() => handleDelete(entry.id)}
+                                            className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                            title="Delete"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            <EditModal
+                isOpen={!!editingEntry}
+                onClose={() => setEditingEntry(null)}
+                entry={editingEntry}
+                onSave={handleEditSave}
+            />
+        </div>
+    );
 }
