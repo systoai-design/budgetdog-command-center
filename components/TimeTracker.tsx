@@ -407,7 +407,7 @@ export default function TimeTracker() {
                                                 </span>
                                             </td>
                                             <td className="p-4 font-mono text-gray-700 dark:text-gray-300">
-                                                {entry.duration}m
+                                                {formatDuration(entry.duration)}
                                             </td>
                                             <td className="p-4 text-right">
                                                 <button
@@ -428,4 +428,15 @@ export default function TimeTracker() {
             </div>
         </Card>
     );
+}
+
+function formatDuration(totalMinutes: number): string {
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = Math.floor(totalMinutes % 60);
+    // Optional: if we want seconds, we need to store them more precisely or calculate remainder
+    // For now, let's show Hh Mm
+    if (hours > 0) {
+        return `${hours}h ${minutes}m`;
+    }
+    return `${minutes}m`;
 }

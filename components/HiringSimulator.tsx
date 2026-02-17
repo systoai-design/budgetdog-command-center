@@ -413,7 +413,7 @@ export default function HiringSimulator() {
                     <div className="flex items-center gap-6 text-sm">
                         <div className="text-right">
                             <div className="text-gray-500 dark:text-gray-400 text-xs uppercase">Estimated Capacity</div>
-                            <div className="font-bold text-gray-900 dark:text-white">{totalAdvisorCapacity} Hrs Available</div>
+                            <div className="font-bold text-gray-900 dark:text-white">{totalAdvisorCapacity} Hrs Max</div>
                         </div>
                         <div className="text-right border-l border-gray-200 dark:border-gray-700 pl-6">
                             <div className="text-gray-500 dark:text-gray-400 text-xs uppercase">Reality Check (Last 30 Days)</div>
@@ -425,7 +425,7 @@ export default function HiringSimulator() {
                                 <div>
                                     <span className="block text-xs text-gray-500">Implied Ratio</span>
                                     <span className={cn("font-bold", actualHoursPerClient > hoursPerClient ? "text-red-500" : "text-green-500")}>
-                                        {actualHoursPerClient.toFixed(1)} Hrs/Client
+                                        {actualHoursPerClient < 0.1 && actualHoursPerClient > 0 ? "< 0.1" : actualHoursPerClient.toFixed(1)} Hrs/Client
                                     </span>
                                 </div>
                             </div>

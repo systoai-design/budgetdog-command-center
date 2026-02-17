@@ -72,6 +72,17 @@ body {
   font-family: var(--font-body);
 }
 
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Fix Date Picker Icon in Dark Mode */
+.dark ::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}
+
 /* Utility for material icons alignment */
 .material-icons {
   display: inline-flex;
