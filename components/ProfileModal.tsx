@@ -42,28 +42,34 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
     const handleAdd = async (type: "admin" | "domain", value: string) => {
         if (!value) return;
         try {
-            await fetch("/api/admin/config", {
+            const res = await fetch("/api/admin/config", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ type, value, userEmail: user?.email })
             });
+            if (!res.ok) throw new Error("Failed to add");
+
             setRefreshTrigger(p => p + 1);
             if (type === "admin") setNewAdmin("");
             else setNewDomain("");
         } catch (error) {
             console.error("Failed to add", error);
+            alert("Failed to save changes. Please try again.");
         }
     };
 
     const handleDelete = async (type: "admin" | "domain", value: string) => {
         if (!confirm(`Are you sure you want to remove ${value}?`)) return;
         try {
-            await fetch(`/api/admin/config?type=${type}&value=${value}`, {
+            const res = await fetch(`/api/admin/config?type=${type}&value=${value}`, {
                 method: "DELETE"
             });
+            if (!res.ok) throw new Error("Failed to delete");
+
             setRefreshTrigger(p => p + 1);
         } catch (error) {
             console.error("Failed to delete", error);
+            alert("Failed to delete. Please try again.");
         }
     };
 

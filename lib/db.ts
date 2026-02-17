@@ -18,8 +18,6 @@ export async function initDb() {
             notes TEXT,
             timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
         )
-            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-        )
     `);
 
     await db.execute(`
