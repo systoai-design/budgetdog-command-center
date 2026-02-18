@@ -177,7 +177,9 @@ export default function TimeTracker() {
 
     // Modal State
     const [editingEntry, setEditingEntry] = useState<TimeEntry | null>(null);
+    const [isLogExpanded, setIsLogExpanded] = useState(true); // Default to expanded, or false if they want to save space initially? "does not eat up too long" suggests maybe false or just the ability. Let's default true but easy to close. User said "it does not eat up", maybe default false? I'll stick to true but they can close it. Or maybe false is safer. Let's do `false`.
 
+    // Fetch entries
     // Fetch entries
     const fetchEntries = useCallback(async () => {
         if (!user) return;
@@ -336,7 +338,7 @@ export default function TimeTracker() {
                 body: JSON.stringify({
                     id,
                     ...updates,
-                    status: 'pending' // Edits trigger pending
+                    status: user?.isSuperAdmin ? 'approved' : 'pending' // Admins auto-approve, others pending
                 }),
             });
             await fetchEntries();
@@ -480,84 +482,101 @@ export default function TimeTracker() {
 
             {/* List / Log */}
             <div className="pt-8 border-t border-border-light dark:border-border-dark">
-                <h3 className="text-xl font-bold mb-6 text-gray-900 dark:text-white flex items-center gap-2">
-                    <FileText size={24} className="text-primary" />
-                    Entry Log
-                </h3>
-
-                {sortedEntries.length === 0 ? (
-                    <div className="text-center py-10 opacity-50 bg-gray-50 dark:bg-zinc-800/50 rounded-xl">
-                        <p className="text-gray-500">No entries found.</p>
+                <button
+                    onClick={() => setIsLogExpanded(!isLogExpanded)}
+                    className="flex items-center justify-between w-full group mb-6"
+                >
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2 group-hover:text-primary transition-colors">
+                        <FileText size={24} className="text-primary" />
+                        Entry Log
+                    </h3>
+                    <div className="text-gray-500 group-hover:text-primary transition-colors text-sm font-medium">
+                        {isLogExpanded ? "Collapse" : "Expand"}
                     </div>
-                ) : (
-                    <div className="space-y-3">
-                        {sortedEntries.map(entry => (
-                            <div key={entry.id} className={cn(
-                                "group bg-surface-light dark:bg-surface-dark border p-4 rounded-xl flex flex-col sm:flex-row gap-4 sm:items-center relative overflow-hidden",
-                                entry.status === 'pending'
-                                    ? "border-yellow-500/50 bg-yellow-50 dark:bg-yellow-900/10"
-                                    : "border-border-light dark:border-border-dark hover:border-primary/30"
-                            )}>
-                                {entry.status === 'pending' && (
-                                    <div className="absolute top-0 right-0 bg-yellow-500 text-black text-[10px] uppercase font-bold px-2 py-0.5 rounded-bl-lg flex items-center gap-1">
-                                        <AlertCircle size={10} /> Pending Approval
-                                    </div>
-                                )}
+                </button>
 
-                                <div className="flex-1 space-y-1">
-                                    <div className="flex items-center gap-2 flex-wrap text-xs">
-                                        <span className="font-bold text-gray-500">{new Date(entry.timestamp).toLocaleDateString()}</span>
-                                        {entry.user_email && (
-                                            <span className="bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-400 px-1.5 py-0.5 rounded flex items-center gap-1">
-                                                <User size={10} /> {entry.user_email.split('@')[0]}
-                                            </span>
-                                        )}
-                                        <span className="bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-400 px-1.5 py-0.5 rounded uppercase">{entry.category}</span>
-                                    </div>
-                                    <div className="font-bold text-gray-900 dark:text-white">{entry.charge_code}</div>
-                                    {entry.notes && <div className="text-sm text-gray-500 italic">"{entry.notes}"</div>}
-                                </div>
-
-                                <div className="flex items-center gap-4 justify-between sm:justify-end w-full sm:w-auto">
-                                    <div className="text-lg font-mono font-bold">
-                                        {Math.floor(entry.duration / 60)}<span className="text-xs text-gray-400 mx-1">h</span>
-                                        {entry.duration % 60}<span className="text-xs text-gray-400">m</span>
-                                    </div>
-
-                                    <div className="flex items-center gap-1">
-                                        {/* Admin Approval Button */}
-                                        {user?.isSuperAdmin && entry.status === 'pending' && (
-                                            <button
-                                                onClick={() => handleApprove(entry.id)}
-                                                className="p-2 bg-green-500/10 text-green-600 hover:bg-green-500/20 rounded-lg transition-colors"
-                                                title="Approve"
-                                            >
-                                                <CheckCircle size={18} />
-                                            </button>
-                                        )}
-
-                                        {/* Edit Button */}
-                                        <button
-                                            onClick={() => setEditingEntry(entry)}
-                                            className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-                                            title="Edit"
-                                        >
-                                            <Edit2 size={16} />
-                                        </button>
-
-                                        {/* Delete Button */}
-                                        <button
-                                            onClick={() => handleDelete(entry.id)}
-                                            className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                                            title="Delete"
-                                        >
-                                            <Trash2 size={16} />
-                                        </button>
-                                    </div>
-                                </div>
+                {isLogExpanded && (
+                    <>
+                        {sortedEntries.length === 0 ? (
+                            <div className="text-center py-10 opacity-50 bg-gray-50 dark:bg-zinc-800/50 rounded-xl">
+                                <p className="text-gray-500">No entries found.</p>
                             </div>
-                        ))}
-                    </div>
+                        ) : (
+                            <div className="space-y-3">
+                                {sortedEntries.map((entry, index) => (
+                                    <div key={entry.id} className="flex gap-4 items-center">
+                                        <div className="text-gray-400 font-bold text-lg w-6 text-right shrink-0">
+                                            {index + 1}.
+                                        </div>
+                                        <div className={cn(
+                                            "flex-1 group bg-surface-light dark:bg-surface-dark border p-4 rounded-xl flex flex-col sm:flex-row gap-4 sm:items-center relative overflow-hidden",
+                                            entry.status === 'pending'
+                                                ? "border-yellow-500/50 bg-yellow-50 dark:bg-yellow-900/10"
+                                                : "border-border-light dark:border-border-dark hover:border-primary/30"
+                                        )}>
+                                            {entry.status === 'pending' && (
+                                                <div className="absolute top-0 right-0 bg-yellow-500 text-black text-[10px] uppercase font-bold px-2 py-0.5 rounded-bl-lg flex items-center gap-1">
+                                                    <AlertCircle size={10} /> Pending Approval
+                                                </div>
+                                            )}
+
+                                            <div className="flex-1 space-y-1">
+                                                <div className="flex items-center gap-2 flex-wrap text-xs">
+                                                    <span className="font-bold text-gray-500">{new Date(entry.timestamp).toLocaleDateString()}</span>
+                                                    {entry.user_email && (
+                                                        <span className="bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-400 px-1.5 py-0.5 rounded flex items-center gap-1">
+                                                            <User size={10} /> {entry.user_email.split('@')[0]}
+                                                        </span>
+                                                    )}
+                                                    <span className="bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-400 px-1.5 py-0.5 rounded uppercase">{entry.category}</span>
+                                                </div>
+                                                <div className="font-bold text-gray-900 dark:text-white">{entry.charge_code}</div>
+                                                {entry.notes && <div className="text-sm text-gray-500 italic">"{entry.notes}"</div>}
+                                            </div>
+
+                                            <div className="flex items-center gap-4 justify-between sm:justify-end w-full sm:w-auto">
+                                                <div className="text-lg font-mono font-bold">
+                                                    {Math.floor(entry.duration / 60)}<span className="text-xs text-gray-400 mx-1">h</span>
+                                                    {entry.duration % 60}<span className="text-xs text-gray-400">m</span>
+                                                </div>
+
+                                                <div className="flex items-center gap-1">
+                                                    {/* Admin Approval Button */}
+                                                    {user?.isSuperAdmin && entry.status === 'pending' && (
+                                                        <button
+                                                            onClick={() => handleApprove(entry.id)}
+                                                            className="p-2 bg-green-500/10 text-green-600 hover:bg-green-500/20 rounded-lg transition-colors"
+                                                            title="Approve"
+                                                        >
+                                                            <CheckCircle size={18} />
+                                                        </button>
+                                                    )}
+
+                                                    {/* Edit Button */}
+                                                    <button
+                                                        onClick={() => setEditingEntry(entry)}
+                                                        className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                                                        title="Edit"
+                                                    >
+                                                        <Edit2 size={16} />
+                                                    </button>
+
+                                                    {/* Delete Button */}
+                                                    <button
+                                                        onClick={() => handleDelete(entry.id)}
+                                                        className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                                        title="Delete"
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </>
                 )}
             </div>
 

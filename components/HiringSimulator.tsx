@@ -100,9 +100,10 @@ interface SliderControlProps {
     onChange: (value: number) => void;
     unit: string;
     step?: number;
+    strict?: boolean;
 }
 
-const SliderControl = ({ label, value, min, max, onChange, unit, step = 1 }: SliderControlProps) => (
+const SliderControl = ({ label, value, min, max, onChange, unit, step = 1, strict = false }: SliderControlProps) => (
     <div>
         <div className="flex justify-between items-center text-sm mb-2">
             <span className="text-gray-600 dark:text-gray-300 font-medium">{label}</span>
@@ -110,10 +111,14 @@ const SliderControl = ({ label, value, min, max, onChange, unit, step = 1 }: Sli
                 <input
                     type="number"
                     min={0} // Allow going below slider min if needed, but keeping positive usually safe
-                    max={max * 2} // Allow going above slider max? User asked for "custom number", implying they might want to exceed limits.
+                    max={strict ? max : max * 2} // Strict mode enforces max
                     step={step}
                     value={value}
-                    onChange={(e) => onChange(Number(e.target.value))}
+                    onChange={(e) => {
+                        let val = Number(e.target.value);
+                        if (strict && val > max) val = max;
+                        onChange(val);
+                    }}
                     className="w-16 bg-transparent text-right font-bold text-primary focus:outline-none text-sm"
                 />
                 <span className="text-xs text-gray-500 font-medium">{unit}</span>
@@ -354,17 +359,19 @@ export default function HiringSimulator() {
                             label="Max Advisor Capacity"
                             value={advisorCapacity}
                             min={80}
-                            max={240}
+                            max={160}
                             onChange={setAdvisorCapacity}
                             unit="hrs/mo"
+                            strict={true}
                         />
                         <SliderControl
                             label="Max Support Capacity"
                             value={supportCapacity}
                             min={80}
-                            max={240}
+                            max={160}
                             onChange={setSupportCapacity}
                             unit="hrs/mo"
+                            strict={true}
                         />
                         <SliderControl
                             label="Projected Growth Rate"
