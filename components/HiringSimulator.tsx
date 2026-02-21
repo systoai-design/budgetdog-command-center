@@ -9,6 +9,8 @@ import {
     CartesianGrid,
     Tooltip,
     ResponsiveContainer,
+    ComposedChart,
+    Line,
 } from "recharts";
 import {
     Users,
@@ -537,7 +539,7 @@ export default function HiringSimulator() {
                     </div>
                     <div className="h-64 w-full">
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={projectionData}>
+                            <ComposedChart data={projectionData}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.2} />
                                 <XAxis
                                     dataKey="month"
@@ -547,15 +549,35 @@ export default function HiringSimulator() {
                                     axisLine={false}
                                 />
                                 <YAxis
+                                    yAxisId="left"
                                     stroke="#888"
                                     fontSize={12}
                                     tickLine={false}
                                     axisLine={false}
                                 />
+                                <YAxis
+                                    yAxisId="right"
+                                    orientation="right"
+                                    stroke="#4ade80"
+                                    fontSize={12}
+                                    tickLine={false}
+                                    axisLine={false}
+                                    tickFormatter={(value) => `$${value >= 1000 ? (value / 1000).toFixed(0) + 'k' : value}`}
+                                />
                                 <Tooltip content={<CustomTooltip />} cursor={{ fill: 'transparent' }} />
-                                <Bar dataKey="Demand" name="Hours Needed" fill="#CAA91E" radius={[4, 4, 0, 0]} />
-                                <Bar dataKey="Capacity" name="Total Capacity" fill="#3f3f46" radius={[4, 4, 0, 0]} />
-                            </BarChart>
+                                <Bar yAxisId="left" dataKey="Demand" name="Hours Needed" fill="#CAA91E" radius={[4, 4, 0, 0]} />
+                                <Bar yAxisId="left" dataKey="Capacity" name="Total Capacity" fill="#3f3f46" radius={[4, 4, 0, 0]} />
+                                <Line
+                                    yAxisId="right"
+                                    type="monotone"
+                                    dataKey="revenue"
+                                    name="Est. Revenue"
+                                    stroke="#4ade80"
+                                    strokeWidth={3}
+                                    dot={{ r: 4, fill: '#4ade80' }}
+                                    activeDot={{ r: 6 }}
+                                />
+                            </ComposedChart>
                         </ResponsiveContainer>
                     </div>
                 </Card>

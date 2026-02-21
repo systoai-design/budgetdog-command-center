@@ -3,16 +3,17 @@
 import { useState, useEffect } from "react";
 import TimeTracker from "@/components/TimeTracker";
 import HiringSimulator from "@/components/HiringSimulator";
+import LiveCapacityDashboard from "@/components/LiveCapacityDashboard";
 import ActualsDashboard from "@/components/ActualsDashboard";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { Tab, TabsList } from "@/components/Tabs";
-import { Clock, TrendingUp, BarChart3, LayoutDashboard } from "lucide-react";
+import { Clock, TrendingUp, BarChart3, LayoutDashboard, Activity } from "lucide-react";
 
 export default function Dashboard() {
     const { user, viewMode, division } = useAuth();
     const router = useRouter();
-    const [activeTab, setActiveTab] = useState<"time" | "capacity" | "actuals">("capacity");
+    const [activeTab, setActiveTab] = useState<"time" | "capacity" | "live" | "actuals">("live");
 
     useEffect(() => {
         if (!user) {
@@ -25,7 +26,7 @@ export default function Dashboard() {
 
     // Redirect if on capacity tab but not in admin view
     useEffect(() => {
-        if (!isAdminView && activeTab === "capacity") {
+        if (!isAdminView && (activeTab === "capacity" || activeTab === "live")) {
             setActiveTab("time");
         }
     }, [isAdminView, activeTab]);
@@ -49,13 +50,22 @@ export default function Dashboard() {
 
                 <TabsList>
                     {isAdminView && (
-                        <Tab
-                            label="Capacity Planner"
-                            value="capacity"
-                            isActive={activeTab === "capacity"}
-                            onClick={() => setActiveTab("capacity")}
-                            icon={TrendingUp}
-                        />
+                        <>
+                            <Tab
+                                label="Live Capacity"
+                                value="live"
+                                isActive={activeTab === "live"}
+                                onClick={() => setActiveTab("live")}
+                                icon={Activity}
+                            />
+                            <Tab
+                                label="Capacity Planner"
+                                value="capacity"
+                                isActive={activeTab === "capacity"}
+                                onClick={() => setActiveTab("capacity")}
+                                icon={TrendingUp}
+                            />
+                        </>
                     )}
                     <Tab
                         label="Time Tracker"
@@ -76,6 +86,7 @@ export default function Dashboard() {
 
             <main className="max-w-7xl mx-auto pb-12">
                 {activeTab === "time" && <TimeTracker />}
+                {activeTab === "live" && isAdminView && <LiveCapacityDashboard />}
                 {activeTab === "capacity" && isAdminView && <HiringSimulator />}
                 {activeTab === "actuals" && <ActualsDashboard />}
             </main>
