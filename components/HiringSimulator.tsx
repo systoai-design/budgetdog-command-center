@@ -152,12 +152,11 @@ export default function HiringSimulator() {
     const [hoursPerClient, setHoursPerClient] = useState(5.5);
     const [advisorCapacity, setAdvisorCapacity] = useState(140);
     const [supportCapacity, setSupportCapacity] = useState(140);
-    // Planning: $350/mo, Preparation: $333/mo ($4,000/yr ÷ 12)
-    const [avgClientFee, setAvgClientFee] = useState(isPreparation ? 333 : 350);
-    const [advisorMonthlyCost, setAdvisorMonthlyCost] = useState(6000);
-    const [supportMonthlyCost, setSupportMonthlyCost] = useState(4000);
     const [growthRate, setGrowthRate] = useState(5);
-    const [isAnnualRevenue, setIsAnnualRevenue] = useState(isPreparation);
+
+    // New Target Utilization settings
+    const [advisorTargetUtilization, setAdvisorTargetUtilization] = useState(85);
+    const [supportTargetUtilization, setSupportTargetUtilization] = useState(85);
 
     // Actuals State
     const [totalActualHours, setTotalActualHours] = useState(0);
@@ -217,37 +216,31 @@ export default function HiringSimulator() {
 
     const [supportHoursPerClient, setSupportHoursPerClient] = useState(2.0);
 
-    // Derived Metrics
-    const totalHoursNeeded = numClients * hoursPerClient;
+    // Derived Metrics - Capacity strictly based on Time/People
     const totalAdvisorCapacity = numAdvisors * advisorCapacity;
     const totalSupportCapacity = numSupport * supportCapacity;
 
-    const advisorUtilizationRate = (totalHoursNeeded / totalAdvisorCapacity) * 100;
-    const advisorSurplusHours = totalAdvisorCapacity - totalHoursNeeded;
-    const advisorCanTakeNewClients = Math.floor(advisorSurplusHours / hoursPerClient);
+    const advisorMaxClients = hoursPerClient > 0 ? Math.floor((totalAdvisorCapacity * (advisorTargetUtilization / 100)) / hoursPerClient) : 0;
+    const supportMaxClients = supportHoursPerClient > 0 ? Math.floor((totalSupportCapacity * (supportTargetUtilization / 100)) / supportHoursPerClient) : 0;
+
+    // Firm physical limit is the lowest of the bottlenecked teams
+    const firmMaxClients = Math.min(advisorMaxClients, supportMaxClients);
+    const bottleneck = advisorMaxClients < supportMaxClients ? "Advisors" : supportMaxClients < advisorMaxClients ? "Support" : "Both";
+
+    const safeToOnboard = Math.max(0, firmMaxClients - numClients);
+
+    // Utilization Rates against absolute physical max (for gauges)
+    const totalHoursNeeded = numClients * hoursPerClient;
+    const advisorUtilizationRate = totalAdvisorCapacity > 0 ? (totalHoursNeeded / totalAdvisorCapacity) * 100 : 0;
 
     const totalSupportHoursNeeded = numClients * supportHoursPerClient;
-    const supportUtilizationRate = (totalSupportHoursNeeded / totalSupportCapacity) * 100;
-
-    const utilizationRate = Math.max(advisorUtilizationRate, supportUtilizationRate);
+    const supportUtilizationRate = totalSupportCapacity > 0 ? (totalSupportHoursNeeded / totalSupportCapacity) * 100 : 0;
 
     // Warning Logic
-    const isAdvisorOver = advisorUtilizationRate > 100;
-    const isSupportOver = supportUtilizationRate > 100;
-    const isAdvisorWarning = advisorUtilizationRate > 85;
-    const isSupportWarning = supportUtilizationRate > 85;
-
-    const isOverCapacity = isAdvisorOver || isSupportOver;
-    const isHiringWarning = isAdvisorWarning || isSupportWarning;
-
-    // Financials
-    const effectiveAvgFee = isAnnualRevenue ? avgClientFee / 12 : avgClientFee;
-    const monthlyRevenue = numClients * effectiveAvgFee;
-
-    // Costs
-    const advisorCostValue = numAdvisors * advisorMonthlyCost;
-    const supportCostValue = numSupport * supportMonthlyCost;
-    const margin = monthlyRevenue - (advisorCostValue + supportCostValue);
+    const isOverCapacity = numClients > firmMaxClients;
+    const isAdvisorWarning = advisorUtilizationRate > (advisorTargetUtilization - 5);
+    const isSupportWarning = supportUtilizationRate > (supportTargetUtilization - 5);
+    const isHiringWarning = !isOverCapacity && (isAdvisorWarning || isSupportWarning);
 
     // Chart Data
     const projectionData = Array.from({ length: 6 }).map((_, i) => {
@@ -257,17 +250,11 @@ export default function HiringSimulator() {
 
         // Calculate compounded clients based on monthly growth rate
         const monthClients = Math.floor(numClients * Math.pow(1 + (growthRate / 100), i + 1));
-        const monthHours = monthClients * hoursPerClient;
-
-        // Financials (Projected)
-        const monthRevenue = monthClients * effectiveAvgFee;
 
         return {
             month: monthName,
-            Demand: monthHours,
-            Capacity: totalAdvisorCapacity,
-            clients: monthClients,
-            revenue: monthRevenue,
+            Clients: monthClients,
+            MaxCapacity: firmMaxClients,
         };
     });
 
@@ -278,20 +265,12 @@ export default function HiringSimulator() {
                     <p className="font-bold text-gray-900 dark:text-white mb-2">{label}</p>
                     <div className="space-y-1">
                         <div className="flex justify-between gap-4">
-                            <span className="text-gray-500">Clients:</span>
-                            <span className="font-mono font-bold text-gray-900 dark:text-white">{payload[0].payload.clients.toLocaleString()}</span>
+                            <span className="text-gray-500">Proj. Clients:</span>
+                            <span className="font-mono font-bold text-gray-900 dark:text-white">{payload[0].payload.Clients.toLocaleString()}</span>
                         </div>
                         <div className="flex justify-between gap-4">
-                            <span className="text-yellow-600 dark:text-yellow-500">Hours Needed:</span>
-                            <span className="font-mono font-bold text-yellow-600 dark:text-yellow-500">{Math.round(payload[0].value).toLocaleString()}</span>
-                        </div>
-                        <div className="flex justify-between gap-4">
-                            <span className="text-gray-500">Capacity:</span>
-                            <span className="font-mono font-bold text-gray-500">{payload[1].value.toLocaleString()}</span>
-                        </div>
-                        <div className="border-t border-gray-200 dark:border-zinc-700 my-1 pt-1 flex justify-between gap-4">
-                            <span className="text-green-600 dark:text-green-500 font-bold">Est. Revenue:</span>
-                            <span className="font-mono font-bold text-green-600 dark:text-green-500">${Math.round(payload[0].payload.revenue).toLocaleString()}</span>
+                            <span className="text-gray-500">Firm Max Clients:</span>
+                            <span className="font-mono font-bold text-gray-500">{payload[0].payload.MaxCapacity.toLocaleString()}</span>
                         </div>
                     </div>
                 </div>
@@ -381,6 +360,22 @@ export default function HiringSimulator() {
                             strict={true}
                         />
                         <SliderControl
+                            label="Target Adv. Util %"
+                            value={advisorTargetUtilization}
+                            min={10}
+                            max={100}
+                            onChange={setAdvisorTargetUtilization}
+                            unit="%"
+                        />
+                        <SliderControl
+                            label="Target Sup. Util %"
+                            value={supportTargetUtilization}
+                            min={10}
+                            max={100}
+                            onChange={setSupportTargetUtilization}
+                            unit="%"
+                        />
+                        <SliderControl
                             label="Projected Growth Rate"
                             value={growthRate}
                             min={0}
@@ -389,53 +384,6 @@ export default function HiringSimulator() {
                             unit="%/mo"
                         />
 
-                        <div className="pt-6 border-t border-border-light dark:border-border-dark">
-                            <h4 className="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-500 font-bold mb-4">Financial Assumptions</h4>
-
-                            {/* Revenue Toggle */}
-                            <div className="flex bg-gray-100 dark:bg-zinc-800 p-1 rounded-lg mb-4">
-                                <button
-                                    onClick={() => setIsAnnualRevenue(false)}
-                                    className={cn("flex-1 text-xs font-bold py-1.5 rounded-md transition-all", !isAnnualRevenue ? "bg-white dark:bg-zinc-700 shadow-sm text-gray-900 dark:text-white" : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300")}
-                                >
-                                    Monthly
-                                </button>
-                                <button
-                                    onClick={() => setIsAnnualRevenue(true)}
-                                    className={cn("flex-1 text-xs font-bold py-1.5 rounded-md transition-all", isAnnualRevenue ? "bg-white dark:bg-zinc-700 shadow-sm text-gray-900 dark:text-white" : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300")}
-                                >
-                                    Annual
-                                </button>
-                            </div>
-
-                            <div className="space-y-4">
-                                <SliderControl
-                                    label={isAnnualRevenue ? "Avg Annual Value / Client" : "Avg Monthly Fee / Client"}
-                                    value={avgClientFee}
-                                    min={50}
-                                    max={100000} // Increased for annual
-                                    step={100}
-                                    onChange={setAvgClientFee}
-                                    unit="$"
-                                />
-                                <SliderControl
-                                    label="Advisor Monthly Cost"
-                                    value={advisorMonthlyCost}
-                                    min={2000}
-                                    max={30000}
-                                    onChange={setAdvisorMonthlyCost}
-                                    unit="$"
-                                />
-                                <SliderControl
-                                    label="Support Monthly Cost"
-                                    value={supportMonthlyCost}
-                                    min={2000}
-                                    max={30000}
-                                    onChange={setSupportMonthlyCost}
-                                    unit="$"
-                                />
-                            </div>
-                        </div>
                     </div>
                 </Card>
             </div>
@@ -458,16 +406,17 @@ export default function HiringSimulator() {
                         </h4>
                         <p className={cn("text-sm", isOverCapacity ? "text-red-700 dark:text-red-300" : isHiringWarning ? "text-yellow-700 dark:text-yellow-300" : "text-emerald-700 dark:text-emerald-300")}>
                             {isOverCapacity
-                                ? `You are ${Math.round(utilizationRate)}% utilized. ${isAdvisorOver ? "Advisors" : "Support team"} are underserved.`
+                                ? `Firm is over target capacity. The ${bottleneck} team is the bottleneck.`
                                 : isHiringWarning
-                                    ? `Utilization is above 85% for ${isAdvisorWarning && isSupportWarning ? "both teams" : isAdvisorWarning ? "Advisors" : "Support team"}. Start recruiting.`
+                                    ? `Utilization is approaching target limits for ${bottleneck}. Start recruiting.`
                                     : "Team has room to grow."}
                         </p>
                     </div>
                 </div>
 
-                {/* Metric Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Core Capacity Metrics */}
+                <h4 className="text-gray-500 uppercase tracking-wider text-xs font-bold mb-2">Core People Capacity</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                     <MetricCard
                         icon={Users}
                         label="Active Clients"
@@ -476,28 +425,30 @@ export default function HiringSimulator() {
                     />
                     <MetricCard
                         icon={Briefcase}
-                        label="Open Capacity"
-                        value={advisorCanTakeNewClients > 0 ? advisorCanTakeNewClients : 0}
-                        subtext="new clients fit (Adv)"
+                        label="Safe To Onboard"
+                        value={safeToOnboard}
+                        subtext={`Bottleneck: ${bottleneck}`}
                         iconColorClass="text-red-500"
-                        valueColorClass={advisorCanTakeNewClients < 0 ? "text-red-500" : "text-gray-900 dark:text-white"}
-                        tooltip="Calculated based on Advisor Surplus Hours divided by Hours Per Client."
+                        valueColorClass={safeToOnboard <= 0 ? "text-red-500" : "text-gray-900 dark:text-white"}
+                        tooltip="Calculated dynamically across both Adv and Support using Target Utilization %"
                     />
                     <MetricCard
                         icon={UserPlus}
                         label="Adv Utilization"
                         value={`${Math.round(advisorUtilizationRate)}%`}
-                        subtext={`${totalHoursNeeded.toFixed(0)} of ${totalAdvisorCapacity} hours`}
-                        iconColorClass="text-red-500"
-                        valueColorClass={isOverCapacity ? "text-red-500" : "text-gray-900 dark:text-white"}
-                        tooltip="Percentage of Total Advisor Capacity currently required to service Active Clients."
+                        subtext={`${totalHoursNeeded.toFixed(0)} of ${totalAdvisorCapacity} max hrs`}
+                        iconColorClass="text-blue-500"
+                        valueColorClass={advisorUtilizationRate > advisorTargetUtilization ? "text-red-500" : "text-gray-900 dark:text-white"}
+                        tooltip={`Current utilization vs absolute maximum capacity. Target is ${advisorTargetUtilization}%`}
                     />
                     <MetricCard
-                        icon={DollarSign}
-                        label="Est. Margin"
-                        value={`$${margin.toLocaleString()}`}
-                        iconColorClass="text-green-500"
-                        tooltip={`Revenue (${isAnnualRevenue ? 'Annual/12' : 'Monthly'}) minus Personnel Costs.`}
+                        icon={UserPlus}
+                        label="Sup Utilization"
+                        value={`${Math.round(supportUtilizationRate)}%`}
+                        subtext={`${totalSupportHoursNeeded.toFixed(0)} of ${totalSupportCapacity} max hrs`}
+                        iconColorClass="text-purple-500"
+                        valueColorClass={supportUtilizationRate > supportTargetUtilization ? "text-red-500" : "text-gray-900 dark:text-white"}
+                        tooltip={`Current utilization vs absolute maximum capacity. Target is ${supportTargetUtilization}%`}
                     />
                 </div>
 
@@ -534,7 +485,7 @@ export default function HiringSimulator() {
                 {/* Projection Chart */}
                 <Card className="p-6">
                     <div className="flex justify-between items-center mb-8">
-                        <h3 className="text-lg font-bold text-gray-900 dark:text-white">6-Month Capacity Projection (Advisor)</h3>
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-white">6-Month Target Capacity Funnel</h3>
                         <div className="text-xs text-gray-500 bg-gray-100 dark:bg-zinc-800 px-2 py-1 rounded">Growth Rate: {growthRate}% / mo</div>
                     </div>
                     <div className="h-64 w-full">
@@ -555,27 +506,17 @@ export default function HiringSimulator() {
                                     tickLine={false}
                                     axisLine={false}
                                 />
-                                <YAxis
-                                    yAxisId="right"
-                                    orientation="right"
-                                    stroke="#4ade80"
-                                    fontSize={12}
-                                    tickLine={false}
-                                    axisLine={false}
-                                    tickFormatter={(value) => `$${value >= 1000 ? (value / 1000).toFixed(0) + 'k' : value}`}
-                                />
                                 <Tooltip content={<CustomTooltip />} cursor={{ fill: 'transparent' }} />
-                                <Bar yAxisId="left" dataKey="Demand" name="Hours Needed" fill="#CAA91E" radius={[4, 4, 0, 0]} />
-                                <Bar yAxisId="left" dataKey="Capacity" name="Total Capacity" fill="#3f3f46" radius={[4, 4, 0, 0]} />
+                                <Bar yAxisId="left" dataKey="Clients" name="Proj. Clients" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={40} />
                                 <Line
-                                    yAxisId="right"
-                                    type="monotone"
-                                    dataKey="revenue"
-                                    name="Est. Revenue"
-                                    stroke="#4ade80"
+                                    yAxisId="left"
+                                    type="stepAfter"
+                                    dataKey="MaxCapacity"
+                                    name="Firm Max Capacity"
+                                    stroke="#ef4444"
                                     strokeWidth={3}
-                                    dot={{ r: 4, fill: '#4ade80' }}
-                                    activeDot={{ r: 6 }}
+                                    strokeDasharray="5 5"
+                                    dot={false}
                                 />
                             </ComposedChart>
                         </ResponsiveContainer>
@@ -644,9 +585,7 @@ export default function HiringSimulator() {
                         </div>
                     </div>
                 </Card>
-
-
             </div>
-        </div>
+        </div >
     );
 }
