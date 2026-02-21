@@ -114,7 +114,7 @@ export default function LoginPage() {
                     {/* Top — Logo + Back */}
                     <div>
                         <button
-                            onClick={() => router.push("/")}
+                            onClick={() => window.open("/", "_blank")}
                             className="flex items-center gap-2 text-sm text-zinc-500 hover:text-white transition-colors group mb-16"
                         >
                             <ArrowLeft size={14} className="transition-transform group-hover:-translate-x-0.5" />
@@ -187,7 +187,7 @@ export default function LoginPage() {
                 {/* Mobile-only back link */}
                 <div className="lg:hidden w-full max-w-sm mb-8">
                     <button
-                        onClick={() => router.push("/")}
+                        onClick={() => window.open("/", "_blank")}
                         className="flex items-center gap-2 text-sm text-zinc-500 hover:text-white transition-colors group"
                     >
                         <ArrowLeft size={14} className="transition-transform group-hover:-translate-x-0.5" />
@@ -368,8 +368,19 @@ export default function LoginPage() {
                         Continue with Google
                     </button>
 
+                    {/* Back to landing page */}
+                    <div className="hidden lg:flex justify-center mt-6">
+                        <button
+                            onClick={() => window.open("/", "_blank")}
+                            className="flex items-center gap-2 text-sm text-zinc-500 hover:text-white transition-colors group"
+                        >
+                            <ArrowLeft size={14} className="transition-transform group-hover:-translate-x-0.5" />
+                            Back to Home
+                        </button>
+                    </div>
+
                     {/* Footer */}
-                    <p className="text-zinc-600 text-xs text-center mt-8 font-medium">
+                    <p className="text-zinc-600 text-xs text-center mt-6 font-medium">
                         Protected by Supabase Auth &bull; Restricted Domain Access
                     </p>
                 </div>

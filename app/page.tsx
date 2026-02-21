@@ -2,9 +2,108 @@
 
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 
+/* ───────────────────────────────────────────────
+   FLOATING MONEY SYMBOLS — pure CSS animation
+   ─────────────────────────────────────────────── */
+function FloatingMoney() {
+  const symbols = ["$", "¥", "€", "£", "$", "$", "$", "₿", "$", "$", "¢", "$", "$", "$", "$"];
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
+      {symbols.map((s, i) => {
+        const left = `${5 + (i * 6.3) % 90}%`;
+        const size = 14 + (i % 5) * 8;
+        const dur = 12 + (i % 7) * 4;
+        const delay = (i * 1.7) % 10;
+        const startY = 80 + (i % 4) * 20;
+        return (
+          <span
+            key={i}
+            className="absolute text-yellow-500/[0.07] font-black select-none"
+            style={{
+              left,
+              fontSize: `${size}px`,
+              bottom: `-${size}px`,
+              animation: `floatUp ${dur}s ${delay}s linear infinite`,
+              "--start-y": `${startY}vh`,
+            } as React.CSSProperties}
+          >
+            {s}
+          </span>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ───────────────────────────────────────────────
+   PARALLAX SECTION WRAPPER
+   ─────────────────────────────────────────────── */
+function ParallaxSection({
+  children,
+  className = "",
+  speed = 0.3,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  speed?: number;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReduced) return;
+
+    const handleScroll = () => {
+      const rect = el.getBoundingClientRect();
+      const offset = rect.top * speed * -1;
+      el.style.transform = `translateY(${offset}px)`;
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [speed]);
+
+  return (
+    <div ref={ref} className={className} style={{ willChange: "transform" }}>
+      {children}
+    </div>
+  );
+}
+
+/* ───────────────────────────────────────────────
+   GLASS CARD COMPONENT
+   ─────────────────────────────────────────────── */
+function GlassCard({
+  children,
+  className = "",
+  hover = true,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  hover?: boolean;
+}) {
+  return (
+    <div
+      className={`
+        bg-white/[0.03] backdrop-blur-xl border border-white/[0.06]
+        rounded-2xl shadow-xl shadow-black/20
+        ${hover ? "hover:bg-white/[0.06] hover:border-yellow-500/10 hover:shadow-yellow-500/5 transition-all duration-500" : ""}
+        ${className}
+      `}
+    >
+      {children}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════
+   LANDING PAGE
+   ═══════════════════════════════════════════════════ */
 export default function LandingPage() {
   const { user } = useAuth();
   const router = useRouter();
@@ -14,29 +113,70 @@ export default function LandingPage() {
   }, [user, router]);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white selection:bg-yellow-500/30 overflow-x-hidden">
+    <div className="min-h-screen bg-[#060606] text-white selection:bg-yellow-500/30 overflow-x-hidden">
 
-      {/* ═══════════════════════════════════════════════════
-          NAV
-      ═══════════════════════════════════════════════════ */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0a0a0a]/90 backdrop-blur-xl border-b border-white/[0.04]">
-        <div className="max-w-7xl mx-auto px-6 lg:px-10 flex items-center justify-between h-16">
+      {/* ── Keyframe animations ── */}
+      <style jsx global>{`
+        @keyframes floatUp {
+          0% {
+            transform: translateY(0) rotate(0deg);
+            opacity: 0;
+          }
+          10% {
+            opacity: 1;
+          }
+          90% {
+            opacity: 1;
+          }
+          100% {
+            transform: translateY(calc(var(--start-y, 80vh) * -1.3)) rotate(25deg);
+            opacity: 0;
+          }
+        }
+        @keyframes pulseGlow {
+          0%, 100% { opacity: 0.03; transform: scale(1); }
+          50% { opacity: 0.07; transform: scale(1.05); }
+        }
+        @keyframes shimmer {
+          0% { background-position: -200% center; }
+          100% { background-position: 200% center; }
+        }
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(30px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-up {
+          animation: fadeInUp 0.8s ease-out forwards;
+          opacity: 0;
+        }
+        .delay-100 { animation-delay: 0.1s; }
+        .delay-200 { animation-delay: 0.2s; }
+        .delay-300 { animation-delay: 0.3s; }
+        .delay-400 { animation-delay: 0.4s; }
+        .delay-500 { animation-delay: 0.5s; }
+      `}</style>
+
+      {/* ═══════════════════════════════════════════
+          ISLAND NAV — Frosted Glass Floating Header
+      ═══════════════════════════════════════════ */}
+      <nav className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-5xl">
+        <div className="bg-white/[0.04] backdrop-blur-2xl border border-white/[0.08] rounded-2xl px-6 py-3 flex items-center justify-between shadow-2xl shadow-black/30">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-yellow-500 rounded-lg flex items-center justify-center font-black text-black text-xs">
+            <div className="w-8 h-8 bg-yellow-500 rounded-lg flex items-center justify-center font-black text-black text-xs shadow-lg shadow-yellow-500/20">
               BD
             </div>
             <span className="font-bold text-white text-[15px] tracking-tight">budgetdog</span>
           </div>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4">
             <button
-              onClick={() => router.push("/login")}
+              onClick={() => window.open("/login", "_blank")}
               className="text-sm text-zinc-400 hover:text-white transition-colors font-medium hidden sm:block"
             >
               Sign In
             </button>
             <button
-              onClick={() => router.push("/login")}
-              className="bg-yellow-500 hover:bg-yellow-400 text-black font-bold text-sm px-5 py-2 rounded-lg transition-all hover:scale-[1.02] active:scale-[0.98]"
+              onClick={() => window.open("/login", "_blank")}
+              className="bg-yellow-500 hover:bg-yellow-400 text-black font-bold text-sm px-5 py-2 rounded-xl transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-yellow-500/15"
             >
               Launch App
             </button>
@@ -44,122 +184,161 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      {/* ═══════════════════════════════════════════════════
-          HERO
-      ═══════════════════════════════════════════════════ */}
-      <section className="relative pt-32 pb-16">
-        <div className="absolute top-20 left-1/3 w-[600px] h-[400px] bg-yellow-500/[0.04] rounded-full blur-[150px] pointer-events-none" />
+      {/* ═══════════════════════════════════════════
+          HERO — with floating money + parallax glow
+      ═══════════════════════════════════════════ */}
+      <section className="relative min-h-screen flex items-center pt-24 pb-20">
+        {/* Animated gradient orbs */}
+        <div
+          className="absolute top-10 left-1/4 w-[700px] h-[500px] bg-yellow-500/[0.04] rounded-full blur-[180px] pointer-events-none"
+          style={{ animation: "pulseGlow 8s ease-in-out infinite" }}
+        />
+        <div
+          className="absolute bottom-20 right-1/4 w-[500px] h-[400px] bg-yellow-600/[0.03] rounded-full blur-[150px] pointer-events-none"
+          style={{ animation: "pulseGlow 10s ease-in-out infinite 3s" }}
+        />
 
-        <div className="relative max-w-7xl mx-auto px-6 lg:px-10">
+        {/* Floating money symbols */}
+        <FloatingMoney />
+
+        {/* Subtle grid */}
+        <div
+          className="absolute inset-0 opacity-[0.015] pointer-events-none"
+          style={{
+            backgroundImage: `linear-gradient(rgba(255,255,255,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.4) 1px, transparent 1px)`,
+            backgroundSize: "80px 80px",
+          }}
+        />
+
+        <div className="relative max-w-7xl mx-auto px-6 lg:px-10 w-full">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 border border-yellow-500/20 bg-yellow-500/[0.06] rounded-full px-4 py-1.5 mb-8">
-            <div className="w-1.5 h-1.5 bg-yellow-500 rounded-full" />
+          <div className="animate-fade-in-up inline-flex items-center gap-2 border border-yellow-500/20 bg-yellow-500/[0.06] backdrop-blur-sm rounded-full px-5 py-2 mb-8">
+            <div className="w-1.5 h-1.5 bg-yellow-500 rounded-full animate-pulse" />
             <span className="text-xs font-bold text-yellow-500 uppercase tracking-[0.15em]">Internal Team Tool</span>
           </div>
 
           {/* Headline */}
-          <h1 className="text-[clamp(2.5rem,7vw,5.5rem)] font-black leading-[1.05] tracking-tight max-w-5xl mb-6">
+          <h1 className="animate-fade-in-up delay-100 text-[clamp(2.5rem,7vw,5.5rem)] font-black leading-[1.05] tracking-tight max-w-5xl mb-6">
             The operations hub for{" "}
-            <span className="text-yellow-500">Budgetdog Tax Team.</span>
+            <span
+              className="text-transparent bg-clip-text"
+              style={{
+                backgroundImage: "linear-gradient(135deg, #eab308, #facc15, #fde047, #facc15, #eab308)",
+                backgroundSize: "200% auto",
+                animation: "shimmer 4s linear infinite",
+              }}
+            >
+              Budgetdog Tax Team.
+            </span>
           </h1>
 
-          <p className="text-lg sm:text-xl text-zinc-400 max-w-2xl mb-10 leading-relaxed">
+          <p className="animate-fade-in-up delay-200 text-lg sm:text-xl text-zinc-400 max-w-2xl mb-10 leading-relaxed">
             Track time, plan capacity, and manage workflows across both Tax Planning and Tax Preparation divisions — all from a single unified dashboard.
           </p>
 
-          <div className="flex flex-wrap items-center gap-4 mb-20">
+          <div className="animate-fade-in-up delay-300 flex flex-wrap items-center gap-4 mb-16">
             <button
-              onClick={() => router.push("/login")}
-              className="group bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-8 py-4 rounded-xl text-base transition-all duration-200 flex items-center gap-2.5 shadow-lg shadow-yellow-500/15 hover:shadow-yellow-500/25 hover:scale-[1.02] active:scale-[0.98]"
+              onClick={() => window.open("/login", "_blank")}
+              className="group bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-8 py-4 rounded-xl text-base transition-all duration-200 flex items-center gap-2.5 shadow-lg shadow-yellow-500/20 hover:shadow-yellow-500/30 hover:scale-[1.03] active:scale-[0.98]"
             >
               Launch App
-              <ArrowRight size={18} className="transition-transform group-hover:translate-x-0.5" />
+              <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
             </button>
             <span className="text-sm text-zinc-600 font-medium">@budgetdog.com access only</span>
           </div>
 
-          {/* ── Product Preview ── */}
-          <div className="relative rounded-2xl border border-white/[0.06] bg-zinc-900/50 p-2 shadow-2xl shadow-black/40">
-            <div className="rounded-xl bg-zinc-900 border border-white/[0.04] overflow-hidden">
-              {/* Mock browser bar */}
-              <div className="flex items-center gap-2 px-4 py-3 border-b border-white/[0.04] bg-zinc-950/50">
-                <div className="flex gap-1.5">
-                  <div className="w-2.5 h-2.5 rounded-full bg-zinc-700" />
-                  <div className="w-2.5 h-2.5 rounded-full bg-zinc-700" />
-                  <div className="w-2.5 h-2.5 rounded-full bg-zinc-700" />
+          {/* ── Product Preview (Glass Island) ── */}
+          <ParallaxSection speed={0.05} className="animate-fade-in-up delay-400">
+            <GlassCard className="p-2" hover={false}>
+              <div className="rounded-xl bg-black/40 backdrop-blur-sm border border-white/[0.04] overflow-hidden">
+                {/* Mock browser bar */}
+                <div className="flex items-center gap-2 px-4 py-3 border-b border-white/[0.04] bg-black/30">
+                  <div className="flex gap-1.5">
+                    <div className="w-2.5 h-2.5 rounded-full bg-red-500/40" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/40" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-green-500/40" />
+                  </div>
+                  <div className="flex-1 flex justify-center">
+                    <div className="bg-white/[0.04] backdrop-blur-sm rounded-lg px-4 py-1 text-xs text-zinc-500 font-mono border border-white/[0.04]">
+                      budgetdog-command-center.netlify.app/dashboard
+                    </div>
+                  </div>
                 </div>
-                <div className="flex-1 flex justify-center">
-                  <div className="bg-zinc-800 rounded-md px-4 py-1 text-xs text-zinc-500 font-mono">
-                    budgetdog-command-center.netlify.app/dashboard
+                {/* Mock dashboard */}
+                <div className="p-6 sm:p-8 space-y-5">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-sm text-zinc-500 mb-1">Dashboard</div>
+                      <div className="text-xl font-bold">Time Tracker</div>
+                    </div>
+                    <div className="flex gap-2">
+                      <div className="px-3 py-1.5 bg-yellow-500/10 border border-yellow-500/20 rounded-lg text-xs font-bold text-yellow-500 backdrop-blur-sm">Planning</div>
+                      <div className="px-3 py-1.5 bg-white/[0.04] border border-white/5 rounded-lg text-xs font-medium text-zinc-400 backdrop-blur-sm">Preparation</div>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-4 gap-3">
+                    {[
+                      { label: "Hours Today", value: "6.5h", color: "text-yellow-500" },
+                      { label: "This Week", value: "32h", color: "text-blue-400" },
+                      { label: "Utilization", value: "87%", color: "text-green-400" },
+                      { label: "Team Members", value: "12", color: "text-purple-400" },
+                    ].map((stat, i) => (
+                      <div key={i} className="bg-white/[0.03] backdrop-blur-sm border border-white/[0.04] rounded-xl p-4">
+                        <div className="text-xs text-zinc-500 mb-1 font-medium">{stat.label}</div>
+                        <div className={`text-2xl font-bold ${stat.color}`}>{stat.value}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-3 gap-3">
+                    {[...Array(3)].map((_, i) => (
+                      <div key={i} className="bg-white/[0.02] border border-white/[0.03] rounded-xl p-5 h-24">
+                        <div className="w-20 h-2.5 bg-white/[0.04] rounded mb-3" />
+                        <div className="w-28 h-2.5 bg-white/[0.03] rounded mb-3" />
+                        <div className="w-14 h-2.5 bg-white/[0.02] rounded" />
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
-              {/* Mock dashboard content */}
-              <div className="p-6 sm:p-8 space-y-5">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-sm text-zinc-500 mb-1">Dashboard</div>
-                    <div className="text-xl font-bold">Time Tracker</div>
-                  </div>
-                  <div className="flex gap-2">
-                    <div className="px-3 py-1.5 bg-yellow-500/10 border border-yellow-500/20 rounded-lg text-xs font-bold text-yellow-500">Planning</div>
-                    <div className="px-3 py-1.5 bg-zinc-800 border border-white/5 rounded-lg text-xs font-medium text-zinc-400">Preparation</div>
-                  </div>
-                </div>
-                <div className="grid grid-cols-4 gap-3">
-                  {[
-                    { label: "Hours Today", value: "6.5h", color: "text-yellow-500" },
-                    { label: "This Week", value: "32h", color: "text-blue-400" },
-                    { label: "Utilization", value: "87%", color: "text-green-400" },
-                    { label: "Team Members", value: "12", color: "text-purple-400" },
-                  ].map((stat, i) => (
-                    <div key={i} className="bg-zinc-800/50 border border-white/[0.04] rounded-xl p-4">
-                      <div className="text-xs text-zinc-500 mb-1 font-medium">{stat.label}</div>
-                      <div className={`text-2xl font-bold ${stat.color}`}>{stat.value}</div>
-                    </div>
-                  ))}
-                </div>
-                <div className="grid grid-cols-3 gap-3">
-                  {[...Array(3)].map((_, i) => (
-                    <div key={i} className="bg-zinc-800/30 border border-white/[0.03] rounded-xl p-5 h-24">
-                      <div className="w-20 h-2.5 bg-zinc-700/50 rounded mb-3" />
-                      <div className="w-28 h-2.5 bg-zinc-700/30 rounded mb-3" />
-                      <div className="w-14 h-2.5 bg-zinc-700/20 rounded" />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
+            </GlassCard>
+          </ParallaxSection>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════
+          KEY NUMBERS — Glass islands
+      ═══════════════════════════════════════════ */}
+      <section className="py-14 relative">
+        <div className="max-w-7xl mx-auto px-6 lg:px-10">
+          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
+            {[
+              { n: "8", label: "Role Types" },
+              { n: "2", label: "Divisions" },
+              { n: "30+", label: "Charge Codes" },
+              { n: "160h", label: "Max Capacity / mo" },
+            ].map((stat, i) => (
+              <GlassCard key={i} className="px-8 py-5 text-center">
+                <div className="text-3xl font-black text-yellow-500">{stat.n}</div>
+                <div className="text-xs text-zinc-400 font-semibold uppercase tracking-wider mt-1">{stat.label}</div>
+              </GlassCard>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════════════════
-          KEY NUMBERS BAR
-      ═══════════════════════════════════════════════════ */}
-      <section className="border-y border-white/[0.04] py-12">
-        <div className="max-w-7xl mx-auto px-6 lg:px-10 flex flex-wrap items-center justify-center gap-x-16 gap-y-6">
-          {[
-            { n: "8", label: "Role Types" },
-            { n: "2", label: "Divisions" },
-            { n: "30+", label: "Charge Codes" },
-            { n: "160h", label: "Max Capacity / mo" },
-          ].map((stat, i) => (
-            <div key={i} className="text-center">
-              <div className="text-3xl font-black text-yellow-500">{stat.n}</div>
-              <div className="text-xs text-zinc-500 font-semibold uppercase tracking-wider mt-1">{stat.label}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════════════
+      {/* ═══════════════════════════════════════════
           ONE PLATFORM, BOTH DIVISIONS
-      ═══════════════════════════════════════════════════ */}
-      <section className="py-28">
-        <div className="max-w-7xl mx-auto px-6 lg:px-10">
+      ═══════════════════════════════════════════ */}
+      <section className="py-28 relative">
+        <ParallaxSection speed={0.08}>
+          <div
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-yellow-500/[0.03] rounded-full blur-[200px] pointer-events-none"
+            style={{ animation: "pulseGlow 12s ease-in-out infinite 2s" }}
+          />
+        </ParallaxSection>
+        <div className="relative max-w-7xl mx-auto px-6 lg:px-10">
           <div className="max-w-3xl mx-auto text-center">
-            <div className="w-12 h-12 bg-yellow-500 rounded-xl flex items-center justify-center font-black text-black text-lg mx-auto mb-6">
+            <div className="w-14 h-14 bg-yellow-500/10 backdrop-blur-xl border border-yellow-500/20 rounded-2xl flex items-center justify-center font-black text-yellow-500 text-lg mx-auto mb-8 shadow-lg shadow-yellow-500/10">
               BD
             </div>
             <h2 className="text-[clamp(2rem,5vw,3.5rem)] font-black leading-[1.1] tracking-tight mb-5">
@@ -174,10 +353,10 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════════════════
-          DESIGNED FOR TAX PLANNING
-      ═══════════════════════════════════════════════════ */}
-      <section className="py-20 border-t border-white/[0.04]">
+      {/* ═══════════════════════════════════════════
+          DESIGNED FOR TAX PLANNING — Glass Cards
+      ═══════════════════════════════════════════ */}
+      <section className="py-20 relative">
         <div className="max-w-7xl mx-auto px-6 lg:px-10">
           <div className="grid lg:grid-cols-2 gap-16 items-start">
             <div>
@@ -202,26 +381,26 @@ export default function LandingPage() {
                     codes: ["Data Entry", "Tax Notice", "Compliance", "Client Communication", "Admin"],
                   },
                 ].map((r, i) => (
-                  <div key={i} className="bg-zinc-900/60 border border-white/[0.05] rounded-2xl p-6">
+                  <GlassCard key={i} className="p-6">
                     <div className="font-bold text-base mb-3 flex items-center gap-2">
-                      <div className="w-2 h-2 bg-blue-400 rounded-full" />
+                      <div className="w-2 h-2 bg-blue-400 rounded-full shadow-sm shadow-blue-400/50" />
                       {r.role}
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {r.codes.map((c, j) => (
-                        <span key={j} className="text-xs font-medium bg-zinc-800 border border-white/[0.04] text-zinc-400 px-3 py-1.5 rounded-lg">
+                        <span key={j} className="text-xs font-medium bg-white/[0.04] backdrop-blur-sm border border-white/[0.06] text-zinc-400 px-3 py-1.5 rounded-lg">
                           {c}
                         </span>
                       ))}
                     </div>
-                  </div>
+                  </GlassCard>
                 ))}
               </div>
             </div>
 
-            {/* At-a-glance card — replaces revenue card */}
-            <div className="lg:mt-20">
-              <div className="bg-zinc-900/60 border border-white/[0.05] rounded-2xl p-8">
+            {/* At-a-glance glass card */}
+            <ParallaxSection speed={0.06} className="lg:mt-20">
+              <GlassCard className="p-8">
                 <p className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-6">At a Glance</p>
                 <div className="space-y-4 text-base text-zinc-400">
                   <div className="flex justify-between py-3 border-b border-white/[0.04]">
@@ -241,21 +420,25 @@ export default function LandingPage() {
                     <span className="text-white font-bold">85%</span>
                   </div>
                 </div>
-              </div>
-            </div>
+              </GlassCard>
+            </ParallaxSection>
           </div>
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════════════════
-          BUILT FOR TAX PREPARATION
-      ═══════════════════════════════════════════════════ */}
-      <section className="py-20 border-t border-white/[0.04]">
-        <div className="max-w-7xl mx-auto px-6 lg:px-10">
+      {/* ═══════════════════════════════════════════
+          BUILT FOR TAX PREPARATION — Glass Cards
+      ═══════════════════════════════════════════ */}
+      <section className="py-20 relative">
+        <div
+          className="absolute -right-40 top-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-yellow-500/[0.02] rounded-full blur-[180px] pointer-events-none"
+          style={{ animation: "pulseGlow 10s ease-in-out infinite 4s" }}
+        />
+        <div className="relative max-w-7xl mx-auto px-6 lg:px-10">
           <div className="grid lg:grid-cols-2 gap-16 items-start">
-            {/* At-a-glance card — left side */}
-            <div className="order-2 lg:order-1 lg:mt-20">
-              <div className="bg-zinc-900/60 border border-white/[0.05] rounded-2xl p-8">
+            {/* At-a-glance glass card */}
+            <ParallaxSection speed={0.06} className="order-2 lg:order-1 lg:mt-20">
+              <GlassCard className="p-8">
                 <p className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-6">At a Glance</p>
                 <div className="space-y-4 text-base text-zinc-400">
                   <div className="flex justify-between py-3 border-b border-white/[0.04]">
@@ -275,8 +458,8 @@ export default function LandingPage() {
                     <span className="text-white font-bold">End-to-end</span>
                   </div>
                 </div>
-              </div>
-            </div>
+              </GlassCard>
+            </ParallaxSection>
 
             <div className="order-1 lg:order-2">
               <p className="text-xs font-bold text-yellow-500 uppercase tracking-[0.15em] mb-4">Division Two</p>
@@ -298,13 +481,13 @@ export default function LandingPage() {
                   { role: "Tax Return Reviewer", desc: "Final review before filing", color: "bg-lime-400" },
                   { role: "Project Manager", desc: "Assignments & team coordination", color: "bg-green-400" },
                 ].map((r, i) => (
-                  <div key={i} className="bg-zinc-900/60 border border-white/[0.05] rounded-xl p-5 hover:border-yellow-500/15 transition-colors">
+                  <GlassCard key={i} className="p-5">
                     <div className="font-bold text-sm mb-1.5 flex items-center gap-2">
-                      <div className={`w-2 h-2 ${r.color} rounded-full`} />
+                      <div className={`w-2 h-2 ${r.color} rounded-full shadow-sm`} style={{ boxShadow: `0 0 6px currentColor` }} />
                       {r.role}
                     </div>
                     <div className="text-sm text-zinc-500">{r.desc}</div>
-                  </div>
+                  </GlassCard>
                 ))}
               </div>
             </div>
@@ -312,10 +495,10 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════════════════
-          MADE FOR YOUR TEAM
-      ═══════════════════════════════════════════════════ */}
-      <section className="py-20 border-t border-white/[0.04]">
+      {/* ═══════════════════════════════════════════
+          MADE FOR THE TEAM — Feature Glass Islands
+      ═══════════════════════════════════════════ */}
+      <section className="py-20 relative">
         <div className="max-w-7xl mx-auto px-6 lg:px-10">
           <p className="text-xs font-bold text-yellow-500 uppercase tracking-[0.15em] mb-4">Platform</p>
           <h2 className="text-[clamp(2rem,4vw,3rem)] font-black leading-[1.1] tracking-tight mb-14">
@@ -329,87 +512,94 @@ export default function LandingPage() {
               {
                 title: "Time Tracking",
                 desc: "Log hours by charge code. Each role gets its own specific codes — advisors see planning codes, preparers see prep codes. Daily and weekly views with logs.",
-                accent: "border-l-yellow-500",
+                accent: "bg-yellow-500",
               },
               {
                 title: "Capacity Planner",
                 desc: "Model staffing vs. workload. Adjust team size, growth rate, and utilization targets to project capacity and plan ahead.",
-                accent: "border-l-blue-400",
+                accent: "bg-blue-400",
               },
               {
                 title: "Actuals Dashboard",
                 desc: "View real logged hours vs. projected capacity. Compare advisor and support utilization against monthly and quarterly targets.",
-                accent: "border-l-green-400",
+                accent: "bg-green-400",
               },
               {
                 title: "Division Toggle",
                 desc: "Super Admins switch between Tax Planning and Tax Preparation instantly. Each division carries its own roles and charge code sets.",
-                accent: "border-l-purple-400",
+                accent: "bg-purple-400",
               },
               {
                 title: "Role-Based Views",
                 desc: "8 distinct role types across two divisions. Each team member sees exactly the charge codes and features relevant to their position.",
-                accent: "border-l-amber-400",
+                accent: "bg-amber-400",
               },
               {
                 title: "Access Control",
                 desc: "Domain-restricted login via Supabase Auth. Super Admin config, approved email lists. Only @budgetdog.com and whitelisted domains.",
-                accent: "border-l-red-400",
+                accent: "bg-red-400",
               },
             ].map((f, i) => (
-              <div
-                key={i}
-                className={`bg-zinc-900/40 border border-white/[0.04] border-l-2 ${f.accent} rounded-xl p-6 hover:bg-zinc-900/60 transition-colors`}
-              >
+              <GlassCard key={i} className="p-6 relative overflow-hidden group">
+                {/* Accent glow line */}
+                <div className={`absolute top-0 left-0 w-full h-0.5 ${f.accent} opacity-40 group-hover:opacity-80 transition-opacity`} />
                 <h3 className="font-bold text-white text-base mb-2">{f.title}</h3>
                 <p className="text-sm text-zinc-500 leading-relaxed">{f.desc}</p>
-              </div>
+              </GlassCard>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════════════════
-          CTA — "Ready to launch?"
-      ═══════════════════════════════════════════════════ */}
-      <section className="py-28 border-t border-white/[0.04]">
-        <div className="max-w-7xl mx-auto px-6 lg:px-10 text-center">
-          <h2 className="text-[clamp(2.5rem,6vw,4.5rem)] font-black leading-[1.05] tracking-tight mb-6">
-            Ready to
-            <br />
-            <span className="text-yellow-500">launch?</span>
-          </h2>
-          <p className="text-base text-zinc-500 mb-10 max-w-md mx-auto">
-            Sign in with your BudgetDog credentials to access the dashboard.
-          </p>
-          <button
-            onClick={() => router.push("/login")}
-            className="group bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-10 py-4 rounded-xl transition-all duration-200 inline-flex items-center gap-3 shadow-lg shadow-yellow-500/15 hover:shadow-yellow-500/25 hover:scale-[1.02] active:scale-[0.98] text-lg"
-          >
-            Launch App
-            <ArrowUpRight size={20} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-          </button>
+      {/* ═══════════════════════════════════════════
+          CTA — "Ready to launch?" Glass Island
+      ═══════════════════════════════════════════ */}
+      <section className="py-28 relative">
+        <ParallaxSection speed={0.04}>
+          <div
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-yellow-500/[0.04] rounded-full blur-[200px] pointer-events-none"
+            style={{ animation: "pulseGlow 10s ease-in-out infinite" }}
+          />
+        </ParallaxSection>
+        <div className="relative max-w-4xl mx-auto px-6 lg:px-10">
+          <GlassCard className="p-12 sm:p-16 text-center" hover={false}>
+            <h2 className="text-[clamp(2.5rem,6vw,4.5rem)] font-black leading-[1.05] tracking-tight mb-6">
+              Ready to
+              <br />
+              <span className="text-yellow-500">launch?</span>
+            </h2>
+            <p className="text-base text-zinc-400 mb-10 max-w-md mx-auto">
+              Sign in with your BudgetDog credentials to access the dashboard.
+            </p>
+            <button
+              onClick={() => window.open("/login", "_blank")}
+              className="group bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-10 py-4 rounded-xl transition-all duration-200 inline-flex items-center gap-3 shadow-xl shadow-yellow-500/20 hover:shadow-yellow-500/30 hover:scale-[1.03] active:scale-[0.98] text-lg"
+            >
+              Launch App
+              <ArrowUpRight size={20} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+            </button>
+          </GlassCard>
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════════════════
+      {/* ═══════════════════════════════════════════
           FOOTER
-      ═══════════════════════════════════════════════════ */}
+      ═══════════════════════════════════════════ */}
       <footer className="border-t border-white/[0.04] py-12">
         <div className="max-w-7xl mx-auto px-6 lg:px-10">
           <div className="mb-8">
-            <div className="text-[clamp(3rem,8vw,6rem)] font-black tracking-tighter text-zinc-800 leading-none select-none">
+            <div className="text-[clamp(3rem,8vw,6rem)] font-black tracking-tighter text-white/20 leading-none select-none">
               BUDGETDOG
             </div>
           </div>
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-4 border-t border-white/[0.03]">
             <div className="flex items-center gap-3">
-              <div className="w-6 h-6 bg-yellow-500 rounded-md flex items-center justify-center font-black text-black text-[9px]">
+              <div className="w-6 h-6 bg-yellow-500/10 backdrop-blur-sm border border-yellow-500/20 rounded-md flex items-center justify-center font-black text-yellow-500 text-[9px]">
                 BD
               </div>
-              <span className="text-sm text-zinc-600 font-medium">Tax Command Center</span>
+              <span className="text-sm text-zinc-400 font-medium">Tax Command Center</span>
             </div>
-            <p className="text-xs text-zinc-700">
+            <p className="text-xs text-zinc-500">
               Internal use only &bull; &copy; {new Date().getFullYear()} BudgetDog
             </p>
           </div>

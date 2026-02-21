@@ -20,8 +20,8 @@ export default function Dashboard() {
         }
     }, [user, router]);
 
-    // Show capacity planner for admin-level views in either division
-    const isAdminView = viewMode === "admin" || viewMode === "tax_planning_admin";
+    // Show capacity planner only for Super Admin
+    const isAdminView = viewMode === "admin";
 
     // Redirect if on capacity tab but not in admin view
     useEffect(() => {
