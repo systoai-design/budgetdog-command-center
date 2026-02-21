@@ -24,6 +24,7 @@ import {
     PlugZap
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -110,14 +111,16 @@ export default function LiveCapacityDashboard() {
     // --- FUTURE API STUBS ---
     // These states represent data that currently needs to be manually inputted,
     // but in the future will be populated via external API calls (e.g. active clients from TaxDome/CRM, active staff from HRIS).
-    const [liveClients, setLiveClients] = useState(120);
-    const [liveAdvisors, setLiveAdvisors] = useState(4);
-    const [liveSupport, setLiveSupport] = useState(2);
+    const [liveClients, setLiveClients] = useLocalStorage("live_clients", 120);
+    const [liveAdvisors, setLiveAdvisors] = useLocalStorage("live_advisors", 4);
+    const [liveSupport, setLiveSupport] = useLocalStorage("live_support", 2);
 
     const advisorCapacity = 160; // Locked to 160 internally
-    const [supportCapacity, setSupportCapacity] = useState(140);
-    const [advisorTargetUtilization, setAdvisorTargetUtilization] = useState(85);
-    const [supportTargetUtilization, setSupportTargetUtilization] = useState(85);
+    const [supportCapacity, setSupportCapacity] = useLocalStorage("live_supportCapacity", 140);
+    const [hoursPerClient, setHoursPerClient] = useLocalStorage("live_hoursPerClient", 5.5);
+    const [supportHoursPerClient, setSupportHoursPerClient] = useLocalStorage("live_supportHoursPerClient", 2);
+    const [advisorTargetUtilization, setAdvisorTargetUtilization] = useLocalStorage("live_advisorTargetUtil", 85);
+    const [supportTargetUtilization, setSupportTargetUtilization] = useLocalStorage("live_supportTargetUtil", 85);
 
     // --- ACTUALS DATA ---
     const [actualTotalHours, setActualTotalHours] = useState(0);
@@ -166,7 +169,7 @@ export default function LiveCapacityDashboard() {
 
 
     // --- REALITY METRIC CALCULATIONS ---
-    // Instead of using theoretical "Hours Per Client", we calculate the EXACT run-rate of the last 30 days.
+    // The exact run-rate of the last 30 days (for FYI / visual comparison only)
     const actualHoursPerClient = liveClients > 0 ? (actualTotalHours / liveClients) : 0;
     const actualAdvisorHoursPerClient = liveClients > 0 ? (actualAdvisorHours / liveClients) : 0;
     const actualSupportHoursPerClient = liveClients > 0 ? (actualSupportHours / liveClients) : 0;
@@ -175,8 +178,10 @@ export default function LiveCapacityDashboard() {
     const totalAdvisorCapacity = liveAdvisors * advisorCapacity;
     const totalSupportCapacity = liveSupport * supportCapacity;
 
-    const advisorMaxClients = actualAdvisorHoursPerClient > 0 ? Math.floor((totalAdvisorCapacity * (advisorTargetUtilization / 100)) / actualAdvisorHoursPerClient) : 0;
-    const supportMaxClients = actualSupportHoursPerClient > 0 ? Math.floor((totalSupportCapacity * (supportTargetUtilization / 100)) / actualSupportHoursPerClient) : 0;
+    // Calculate maximum capacity based on the stable ASSUMED hours per client, 
+    // rather than the volatile active tracking rate.
+    const advisorMaxClients = hoursPerClient > 0 ? Math.floor((totalAdvisorCapacity * (advisorTargetUtilization / 100)) / hoursPerClient) : 0;
+    const supportMaxClients = supportHoursPerClient > 0 ? Math.floor((totalSupportCapacity * (supportTargetUtilization / 100)) / supportHoursPerClient) : 0;
 
     // Firm physical limit is the lowest of the bottlenecked teams
     const firmMaxClients = Math.min(advisorMaxClients, supportMaxClients);
@@ -311,6 +316,18 @@ export default function LiveCapacityDashboard() {
                                 value={supportTargetUtilization}
                                 onChange={setSupportTargetUtilization}
                                 unit="%"
+                            />
+                            <NumberControl
+                                label="Advisor Hrs / Client"
+                                value={hoursPerClient}
+                                onChange={setHoursPerClient}
+                                unit="hrs/mo"
+                            />
+                            <NumberControl
+                                label="Support Hrs / Client"
+                                value={supportHoursPerClient}
+                                onChange={setSupportHoursPerClient}
+                                unit="hrs/mo"
                             />
                         </div>
                     </div>

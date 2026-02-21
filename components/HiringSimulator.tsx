@@ -24,6 +24,7 @@ import {
     HelpCircle,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
 
 // ... (existing imports)
 
@@ -146,17 +147,17 @@ export default function HiringSimulator() {
     const isPreparation = division === "preparation";
 
     // Simulator State
-    const [numClients, setNumClients] = useState(120);
-    const [numAdvisors, setNumAdvisors] = useState(4);
-    const [numSupport, setNumSupport] = useState(2);
-    const [hoursPerClient, setHoursPerClient] = useState(5.5);
-    const [advisorCapacity, setAdvisorCapacity] = useState(140);
-    const [supportCapacity, setSupportCapacity] = useState(140);
-    const [growthRate, setGrowthRate] = useState(5);
+    const [numClients, setNumClients] = useLocalStorage("hs_numClients", 120);
+    const [numAdvisors, setNumAdvisors] = useLocalStorage("hs_numAdvisors", 4);
+    const [numSupport, setNumSupport] = useLocalStorage("hs_numSupport", 2);
+    const [hoursPerClient, setHoursPerClient] = useLocalStorage("hs_hoursPerClient", 5.5);
+    const [advisorCapacity, setAdvisorCapacity] = useLocalStorage("hs_advisorCapacity", 140);
+    const [supportCapacity, setSupportCapacity] = useLocalStorage("hs_supportCapacity", 140);
+    const [growthRate, setGrowthRate] = useLocalStorage("hs_growthRate", 5);
 
     // New Target Utilization settings
-    const [advisorTargetUtilization, setAdvisorTargetUtilization] = useState(85);
-    const [supportTargetUtilization, setSupportTargetUtilization] = useState(85);
+    const [advisorTargetUtilization, setAdvisorTargetUtilization] = useLocalStorage("hs_advisorTargetUtilization", 85);
+    const [supportTargetUtilization, setSupportTargetUtilization] = useLocalStorage("hs_supportTargetUtilization", 85);
 
     // Actuals State
     const [totalActualHours, setTotalActualHours] = useState(0);
