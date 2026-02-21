@@ -29,6 +29,7 @@ interface User {
     avatarUrl?: string;
     phone?: string;
     position?: string;
+    timezone?: string;
 }
 
 interface AuthContextType {
@@ -136,6 +137,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 avatarUrl: session.user.user_metadata.avatar_url,
                 phone: session.user.user_metadata.phone,
                 position: session.user.user_metadata.position,
+                timezone: session.user.user_metadata.timezone || "America/New_York",
             });
 
             // Set initial view mode based on division
@@ -164,6 +166,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     avatar_url: data.avatarUrl,
                     phone: data.phone,
                     position: data.position,
+                    timezone: data.timezone,
                 }
             });
 

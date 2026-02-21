@@ -23,6 +23,7 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
     const [avatarUrl, setAvatarUrl] = useState(user?.avatarUrl || "");
     const [phone, setPhone] = useState(user?.phone || "");
     const [position, setPosition] = useState(user?.position || "");
+    const [timezone, setTimezone] = useState(user?.timezone || "America/New_York");
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -115,7 +116,8 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                 name,
                 avatarUrl,
                 phone,
-                position
+                position,
+                timezone
             });
             onClose();
         } catch (error) {
@@ -261,6 +263,28 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                                             className="w-full bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-lg py-2.5 pl-10 pr-4 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
                                             placeholder="+1 (555) 000-0000"
                                         />
+                                    </div>
+                                </div>
+
+                                {/* Timezone */}
+                                <div>
+                                    <label className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5 block">
+                                        Timezone
+                                    </label>
+                                    <div className="relative">
+                                        <select
+                                            value={timezone}
+                                            onChange={(e) => setTimezone(e.target.value)}
+                                            className="w-full bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-lg py-2.5 px-4 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all appearance-none cursor-pointer"
+                                        >
+                                            <option value="America/New_York">Eastern Time (EST/EDT)</option>
+                                            <option value="America/Chicago">Central Time (CST/CDT)</option>
+                                            <option value="America/Denver">Mountain Time (MST/MDT)</option>
+                                            <option value="America/Los_Angeles">Pacific Time (PST/PDT)</option>
+                                            <option value="America/Anchorage">Alaska Time (AKST/AKDT)</option>
+                                            <option value="Pacific/Honolulu">Hawaii-Aleutian Time (HST)</option>
+                                            <option value="Etc/UTC">Coordinated Universal Time (UTC)</option>
+                                        </select>
                                     </div>
                                 </div>
 

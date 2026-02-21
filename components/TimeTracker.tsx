@@ -234,10 +234,33 @@ export default function TimeTracker() {
     const currentCodes = CODE_MAP[viewMode] || ADVISOR_CODES;
 
     // State
-    const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+    const [selectedDate, setSelectedDate] = useState<string>("");
     const [isLoading, setIsLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [entries, setEntries] = useState<TimeEntry[]>([]); // All entries for list
+
+    // Toast State
+    const [toast, setToast] = useState<{ message: string, type: "success" | "error" } | null>(null);
+
+    const showToast = (message: string, type: "success" | "error") => {
+        setToast({ message, type });
+        setTimeout(() => setToast(null), 3000);
+    };
+
+    // Initialize Date based on user timezone
+    useEffect(() => {
+        if (user && !selectedDate) {
+            const tz = user.timezone || "America/New_York";
+            try {
+                // "en-CA" formats as YYYY-MM-DD which is required for input type="date"
+                const todayStr = new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+                setSelectedDate(todayStr);
+            } catch (e) {
+                // Fallback if timezone is invalid
+                setSelectedDate(new Date().toISOString().split('T')[0]);
+            }
+        }
+    }, [user, selectedDate]);
 
     // Grid State
     const [gridState, setGridState] = useState<Record<string, { hours: number, minutes: number, id?: string, notes?: string }>>({});
@@ -249,7 +272,7 @@ export default function TimeTracker() {
     // Fetch entries
     // Fetch entries
     const fetchEntries = useCallback(async () => {
-        if (!user) return;
+        if (!user || !selectedDate) return;
         setIsLoading(true);
         try {
             let url = "/api/time-entries";
@@ -388,9 +411,10 @@ export default function TimeTracker() {
                 }
             }
             await fetchEntries();
-            alert("Time saved successfully!");
+            showToast("Time saved successfully!", "success");
         } catch (error) {
             console.error("Failed to save", error);
+            showToast("Failed to save. Please try again.", "error");
         } finally {
             setIsSaving(false);
         }
@@ -409,9 +433,10 @@ export default function TimeTracker() {
                 }),
             });
             await fetchEntries();
+            showToast("Entry updated successfully!", "success");
         } catch (error) {
             console.error("Failed to edit", error);
-            alert("Failed to update entry");
+            showToast("Failed to update entry", "error");
         }
     };
 
@@ -427,8 +452,10 @@ export default function TimeTracker() {
                 }),
             });
             await fetchEntries();
+            showToast("Entry approved!", "success");
         } catch (error) {
             console.error("Failed to approve", error);
+            showToast("Failed to approve", "error");
         }
     };
 
@@ -467,21 +494,33 @@ export default function TimeTracker() {
                 </div>
 
                 <div className="flex items-center gap-4 bg-surface-light dark:bg-surface-dark p-2 rounded-xl shadow-sm border border-border-light dark:border-border-dark">
-                    <button onClick={() => changeDate(-1)} className="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg text-gray-500">
-                        <ChevronLeft size={20} />
-                    </button>
-                    <div className="flex items-center gap-2 px-2">
-                        <Calendar size={18} className="text-primary" />
-                        <input
-                            type="date"
-                            value={selectedDate}
-                            onChange={(e) => setSelectedDate(e.target.value)}
-                            className="bg-transparent font-bold text-gray-900 dark:text-white outline-none cursor-pointer"
-                        />
-                    </div>
-                    <button onClick={() => changeDate(1)} className="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg text-gray-500">
-                        <ChevronRight size={20} />
-                    </button>
+                    {user?.isSuperAdmin ? (
+                        <>
+                            <button onClick={() => changeDate(-1)} className="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg text-gray-500 transition-colors">
+                                <ChevronLeft size={20} />
+                            </button>
+                            <div className="flex items-center gap-2 px-2">
+                                <Calendar size={18} className="text-primary" />
+                                <input
+                                    type="date"
+                                    value={selectedDate}
+                                    onChange={(e) => setSelectedDate(e.target.value)}
+                                    className="bg-transparent font-bold text-gray-900 dark:text-white outline-none cursor-pointer"
+                                />
+                            </div>
+                            <button onClick={() => changeDate(1)} className="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg text-gray-500 transition-colors">
+                                <ChevronRight size={20} />
+                            </button>
+                        </>
+                    ) : (
+                        <div className="flex items-center gap-2 px-4 py-2 opacity-80 select-none">
+                            <Calendar size={18} className="text-primary" />
+                            <span className="font-bold text-gray-900 dark:text-white">
+                                {selectedDate && new Date(selectedDate + "T12:00:00").toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
+                            </span>
+                            <span className="text-xs uppercase font-bold bg-primary/20 text-primary px-2 py-0.5 rounded-full ml-2">Today ({user?.timezone?.split('/')[1]?.replace('_', ' ') || 'EST'})</span>
+                        </div>
+                    )}
                 </div>
 
                 <div className="flex items-center gap-6">
@@ -585,78 +624,76 @@ export default function TimeTracker() {
                                 <p className="text-gray-500">No entries found.</p>
                             </div>
                         ) : (
-                            <div className="space-y-3">
-                                {sortedEntries.map((entry, index) => (
-                                    <div key={entry.id} className="flex gap-4 items-center">
-                                        <div className="text-gray-400 font-bold text-lg w-6 text-right shrink-0">
-                                            {index + 1}.
-                                        </div>
-                                        <div className={cn(
-                                            "flex-1 group bg-surface-light dark:bg-surface-dark border p-4 rounded-xl flex flex-col sm:flex-row gap-4 sm:items-center relative overflow-hidden",
-                                            entry.status === 'pending'
-                                                ? "border-yellow-500/50 bg-yellow-50 dark:bg-yellow-900/10"
-                                                : "border-border-light dark:border-border-dark hover:border-primary/30"
-                                        )}>
-                                            {entry.status === 'pending' && (
-                                                <div className="absolute top-0 right-0 bg-yellow-500 text-black text-[10px] uppercase font-bold px-2 py-0.5 rounded-bl-lg flex items-center gap-1">
-                                                    <AlertCircle size={10} /> Pending Approval
-                                                </div>
-                                            )}
-
-                                            <div className="flex-1 space-y-1">
-                                                <div className="flex items-center gap-2 flex-wrap text-xs">
-                                                    <span className="font-bold text-gray-500">{new Date(entry.timestamp).toLocaleDateString()}</span>
-                                                    {entry.user_email && (
-                                                        <span className="bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-400 px-1.5 py-0.5 rounded flex items-center gap-1">
-                                                            <User size={10} /> {entry.user_email.split('@')[0]}
+                            <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl shadow-sm overflow-hidden overflow-x-auto">
+                                <table className="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr className="bg-gray-50/50 dark:bg-zinc-800/30 text-[10px] font-bold text-gray-500 uppercase tracking-wider border-b border-border-light dark:border-border-dark">
+                                            <th className="p-4 w-12 text-center">#</th>
+                                            <th className="p-4">Date</th>
+                                            <th className="p-4">User</th>
+                                            <th className="p-4">Category</th>
+                                            <th className="p-4">Charge Code</th>
+                                            <th className="p-4">Notes</th>
+                                            <th className="p-4 text-right">Duration</th>
+                                            <th className="p-4 text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-border-light dark:divide-border-dark">
+                                        {sortedEntries.map((entry, index) => (
+                                            <tr key={entry.id} className={cn("hover:bg-gray-50/50 dark:hover:bg-zinc-800/30 transition-colors group relative", entry.status === 'pending' && "bg-yellow-50/30 dark:bg-yellow-900/10")}>
+                                                <td className="p-4 text-center text-gray-400 font-bold text-sm">
+                                                    {index + 1}
+                                                </td>
+                                                <td className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                                                    {new Date(entry.timestamp).toLocaleDateString()}
+                                                </td>
+                                                <td className="p-4">
+                                                    {entry.user_email ? (
+                                                        <span className="bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-300 px-2 py-1 rounded text-xs flex items-center gap-1 w-max">
+                                                            <User size={12} /> {entry.user_email.split('@')[0]}
                                                         </span>
-                                                    )}
-                                                    <span className="bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-400 px-1.5 py-0.5 rounded uppercase">{entry.category}</span>
-                                                </div>
-                                                <div className="font-bold text-gray-900 dark:text-white">{entry.charge_code}</div>
-                                                {entry.notes && <div className="text-sm text-gray-500 italic">"{entry.notes}"</div>}
-                                            </div>
-
-                                            <div className="flex items-center gap-4 justify-between sm:justify-end w-full sm:w-auto">
-                                                <div className="text-lg font-mono font-bold">
+                                                    ) : <span className="text-gray-400">-</span>}
+                                                </td>
+                                                <td className="p-4 text-xs font-bold text-gray-500 uppercase">
+                                                    {entry.category}
+                                                </td>
+                                                <td className="p-4 text-sm font-bold text-gray-900 dark:text-white">
+                                                    {entry.charge_code}
+                                                </td>
+                                                <td className="p-4 text-sm text-gray-500 italic max-w-[200px] truncate">
+                                                    {entry.notes || <span className="opacity-50">-</span>}
+                                                </td>
+                                                <td className="p-4 text-right font-mono font-bold whitespace-nowrap text-gray-900 dark:text-white">
                                                     {Math.floor(entry.duration / 60)}<span className="text-xs text-gray-400 mx-1">h</span>
                                                     {entry.duration % 60}<span className="text-xs text-gray-400">m</span>
-                                                </div>
-
-                                                <div className="flex items-center gap-1">
-                                                    {/* Admin Approval Button */}
-                                                    {user?.isSuperAdmin && entry.status === 'pending' && (
-                                                        <button
-                                                            onClick={() => handleApprove(entry.id)}
-                                                            className="p-2 bg-green-500/10 text-green-600 hover:bg-green-500/20 rounded-lg transition-colors"
-                                                            title="Approve"
-                                                        >
-                                                            <CheckCircle size={18} />
+                                                </td>
+                                                <td className="p-4">
+                                                    <div className="flex items-center justify-end gap-1">
+                                                        {entry.status === 'pending' && (
+                                                            <span className="bg-yellow-100 text-yellow-800 text-[10px] uppercase font-bold px-2 py-1 rounded mr-2 flex items-center gap-1 w-max">
+                                                                <AlertCircle size={10} /> Pending
+                                                            </span>
+                                                        )}
+                                                        {/* Admin Approval Button */}
+                                                        {user?.isSuperAdmin && entry.status === 'pending' && (
+                                                            <button onClick={() => handleApprove(entry.id)} className="p-2 bg-green-500/10 text-green-600 hover:bg-green-500/20 rounded-lg transition-colors" title="Approve">
+                                                                <CheckCircle size={16} />
+                                                            </button>
+                                                        )}
+                                                        {/* Edit Button */}
+                                                        <button onClick={() => setEditingEntry(entry)} className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors" title="Edit">
+                                                            <Edit2 size={16} />
                                                         </button>
-                                                    )}
-
-                                                    {/* Edit Button */}
-                                                    <button
-                                                        onClick={() => setEditingEntry(entry)}
-                                                        className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-                                                        title="Edit"
-                                                    >
-                                                        <Edit2 size={16} />
-                                                    </button>
-
-                                                    {/* Delete Button */}
-                                                    <button
-                                                        onClick={() => handleDelete(entry.id)}
-                                                        className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                                                        title="Delete"
-                                                    >
-                                                        <Trash2 size={16} />
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
+                                                        {/* Delete Button */}
+                                                        <button onClick={() => handleDelete(entry.id)} className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" title="Delete">
+                                                            <Trash2 size={16} />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
                             </div>
                         )}
                     </>
@@ -669,6 +706,24 @@ export default function TimeTracker() {
                 entry={editingEntry}
                 onSave={handleEditSave}
             />
+
+            {/* Toast Notification */}
+            {toast && (
+                <div className="fixed bottom-6 right-6 z-50 animate-in slide-in-from-bottom-5 fade-in duration-300">
+                    <div className={cn(
+                        "flex items-center gap-3 px-4 py-3 rounded-xl shadow-2xl border backdrop-blur-md",
+                        toast.type === "success"
+                            ? "bg-green-500/10 border-green-500/20 text-green-600 dark:text-green-400"
+                            : "bg-red-500/10 border-red-500/20 text-red-600 dark:text-red-400"
+                    )}>
+                        {toast.type === "success" ? <CheckCircle size={20} /> : <AlertCircle size={20} />}
+                        <span className="font-bold text-sm tracking-wide">{toast.message}</span>
+                        <button onClick={() => setToast(null)} className="ml-2 hover:opacity-70 transition-opacity">
+                            <X size={16} />
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
