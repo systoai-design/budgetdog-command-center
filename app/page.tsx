@@ -588,7 +588,7 @@ export default function LandingPage() {
       <footer className="border-t border-white/[0.04] py-12">
         <div className="max-w-7xl mx-auto px-6 lg:px-10">
           <div className="mb-8">
-            <div className="text-[clamp(3rem,8vw,6rem)] font-black tracking-tighter text-white/20 leading-none select-none">
+            <div className="text-[clamp(3rem,8vw,6rem)] font-black tracking-tighter text-white leading-none select-none">
               BUDGETDOG
             </div>
           </div>

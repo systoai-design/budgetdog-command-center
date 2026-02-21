@@ -502,49 +502,65 @@ export default function TimeTracker() {
                 </div>
             </div>
 
-            {/* Grid */}
-            <div className="space-y-3">
-                {currentCodes.map((code) => (
-                    <Card key={code} className="p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4 hover:border-primary/30 transition-colors">
-                        <div className="flex-1 w-full">
-                            <h3 className="font-bold text-gray-900 dark:text-white text-sm sm:text-base">{code}</h3>
-                            <input
-                                type="text"
-                                placeholder="Add notes (optional)..."
-                                value={gridState[code]?.notes || ""}
-                                onChange={(e) => handleNotesChange(code, e.target.value)}
-                                className="w-full mt-2 bg-transparent text-sm text-gray-500 placeholder:text-gray-600 dark:placeholder:text-zinc-600 border-b border-transparent focus:border-border-light dark:focus:border-border-dark outline-none transition-colors"
-                            />
-                        </div>
+            {/* Grid / Table Layout */}
+            <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl shadow-sm overflow-hidden mb-8">
+                {/* Table Header (Hidden on mobile) */}
+                <div className="hidden sm:grid grid-cols-12 gap-4 p-4 border-b border-border-light dark:border-border-dark bg-gray-50/50 dark:bg-zinc-800/30 text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                    <div className="col-span-4">Charge Code</div>
+                    <div className="col-span-5">Notes (Optional)</div>
+                    <div className="col-span-3 text-right pr-2">Duration</div>
+                </div>
 
-                        <div className="flex items-center gap-3 w-full sm:w-auto justify-end bg-gray-50 dark:bg-zinc-800/50 p-2 rounded-lg">
-                            <div className="flex flex-col items-center">
-                                <input
-                                    type="number"
-                                    min="0"
-                                    placeholder="0"
-                                    value={gridState[code]?.hours || ""}
-                                    onChange={(e) => handleInputChange(code, "hours", e.target.value)}
-                                    className="w-16 h-10 text-center text-lg font-bold bg-white dark:bg-zinc-800 rounded-lg border border-gray-200 dark:border-zinc-700 outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
-                                />
-                                <span className="text-[9px] uppercase font-bold text-gray-400 mt-0.5">Hours</span>
+                {/* Table Body */}
+                <div className="divide-y divide-border-light dark:divide-border-dark">
+                    {currentCodes.map((code) => (
+                        <div key={code} className="grid grid-cols-1 sm:grid-cols-12 gap-y-3 sm:gap-4 p-4 items-center hover:bg-gray-50/50 dark:hover:bg-zinc-800/30 transition-colors group">
+                            {/* Code Column */}
+                            <div className="col-span-1 sm:col-span-4">
+                                <h3 className="font-bold text-gray-900 dark:text-white text-sm">{code}</h3>
                             </div>
-                            <span className="text-xl font-bold text-gray-300 dark:text-zinc-600 pb-3">:</span>
-                            <div className="flex flex-col items-center">
+
+                            {/* Notes Column */}
+                            <div className="col-span-1 sm:col-span-5">
                                 <input
-                                    type="number"
-                                    min="0"
-                                    max="59"
-                                    placeholder="0"
-                                    value={gridState[code]?.minutes || ""}
-                                    onChange={(e) => handleInputChange(code, "minutes", e.target.value)}
-                                    className="w-16 h-10 text-center text-lg font-bold bg-white dark:bg-zinc-800 rounded-lg border border-gray-200 dark:border-zinc-700 outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                                    type="text"
+                                    placeholder="Add notes..."
+                                    value={gridState[code]?.notes || ""}
+                                    onChange={(e) => handleNotesChange(code, e.target.value)}
+                                    className="w-full bg-transparent text-sm text-gray-700 dark:text-gray-300 placeholder:text-gray-400 dark:placeholder:text-zinc-600 border-b border-transparent focus:border-primary outline-none transition-colors py-1.5"
                                 />
-                                <span className="text-[9px] uppercase font-bold text-gray-400 mt-0.5">Mins</span>
+                            </div>
+
+                            {/* Time Column (Compact Inputs) */}
+                            <div className="col-span-1 sm:col-span-3 flex items-center justify-start sm:justify-end">
+                                <div className="flex items-center bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-lg overflow-hidden focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all shadow-sm group-hover:border-gray-300 dark:group-hover:border-zinc-600">
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        placeholder="0"
+                                        value={gridState[code]?.hours || ""}
+                                        onChange={(e) => handleInputChange(code, "hours", e.target.value)}
+                                        className="w-12 h-9 text-center text-base font-bold bg-transparent outline-none text-gray-900 dark:text-white"
+                                    />
+                                    <span className="text-[10px] font-bold text-gray-400 uppercase mr-1">hr</span>
+
+                                    <div className="w-px h-5 bg-gray-200 dark:bg-zinc-700 mx-1"></div>
+
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        max="59"
+                                        placeholder="0"
+                                        value={gridState[code]?.minutes || ""}
+                                        onChange={(e) => handleInputChange(code, "minutes", e.target.value)}
+                                        className="w-12 h-9 text-center text-base font-bold bg-transparent outline-none text-gray-900 dark:text-white"
+                                    />
+                                    <span className="text-[10px] font-bold text-gray-400 uppercase pr-3 mr-1">m</span>
+                                </div>
                             </div>
                         </div>
-                    </Card>
-                ))}
+                    ))}
+                </div>
             </div>
 
             {/* List / Log */}
