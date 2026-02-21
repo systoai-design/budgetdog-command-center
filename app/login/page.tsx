@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { Mail, Lock, User, Eye, EyeOff, Loader2, ChevronDown, ArrowLeft } from "lucide-react";
+import { Mail, Lock, User, Eye, EyeOff, Loader2, ChevronDown, ArrowLeft, Clock, BarChart3, Shield, Layers } from "lucide-react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -11,7 +11,6 @@ function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
 
-// All available roles grouped by division
 const ROLE_OPTIONS = [
     {
         group: "Tax Planning",
@@ -43,7 +42,6 @@ export default function LoginPage() {
     const [error, setError] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
 
-    // Form State
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [name, setName] = useState("");
@@ -92,40 +90,139 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-800 via-zinc-950 to-black flex flex-col items-center justify-center p-4 relative">
+        <div className="min-h-screen bg-[#0a0a0a] flex">
 
-            {/* Back to home */}
-            <button
-                onClick={() => router.push("/")}
-                className="absolute top-6 left-6 flex items-center gap-2 text-sm text-zinc-500 hover:text-white transition-colors group"
-            >
-                <ArrowLeft size={16} className="transition-transform group-hover:-translate-x-0.5" />
-                Home
-            </button>
+            {/* ══════════════════════════════════════
+          LEFT PANEL — Branding & Features
+      ══════════════════════════════════════ */}
+            <div className="hidden lg:flex lg:w-[55%] relative overflow-hidden">
+                {/* Background with yellow accent */}
+                <div className="absolute inset-0 bg-[#0d0d0d]" />
+                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-yellow-500/[0.06] rounded-full blur-[150px] pointer-events-none" />
+                <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-yellow-500/[0.03] rounded-full blur-[120px] pointer-events-none" />
 
-            <div className="w-full max-w-md">
-                {/* Card */}
-                <div className="w-full bg-zinc-900/90 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl shadow-black/50">
+                {/* Grid pattern */}
+                <div
+                    className="absolute inset-0 opacity-[0.025]"
+                    style={{
+                        backgroundImage: `linear-gradient(rgba(255,255,255,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.3) 1px, transparent 1px)`,
+                        backgroundSize: "80px 80px",
+                    }}
+                />
 
-                    {/* Header */}
-                    <div className="text-center mb-8">
-                        <div className="w-14 h-14 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-2xl flex items-center justify-center font-black text-black text-2xl mx-auto mb-4 shadow-lg shadow-yellow-500/20">
-                            B
+                <div className="relative z-10 flex flex-col justify-between p-12 w-full">
+                    {/* Top — Logo + Back */}
+                    <div>
+                        <button
+                            onClick={() => router.push("/")}
+                            className="flex items-center gap-2 text-sm text-zinc-500 hover:text-white transition-colors group mb-16"
+                        >
+                            <ArrowLeft size={14} className="transition-transform group-hover:-translate-x-0.5" />
+                            Back to Home
+                        </button>
+
+                        <div className="flex items-center gap-3 mb-12">
+                            <div className="w-12 h-12 bg-yellow-500 rounded-2xl flex items-center justify-center font-black text-black text-lg shadow-lg shadow-yellow-500/20">
+                                BD
+                            </div>
+                            <div>
+                                <div className="font-bold text-xl text-white tracking-tight">BudgetDog</div>
+                                <div className="text-yellow-500 text-xs font-semibold">Command Center</div>
+                            </div>
                         </div>
-                        <h1 className="text-2xl font-bold text-white tracking-tight">
-                            Welcome back
-                        </h1>
-                        <p className="text-zinc-500 text-sm mt-1">Sign in to your command center</p>
+
+                        <h2 className="text-[clamp(2rem,3.5vw,3rem)] font-black leading-[1.1] tracking-tight text-white mb-4">
+                            Your team&apos;s
+                            <br />
+                            operations hub.
+                        </h2>
+                        <p className="text-zinc-400 text-base leading-relaxed max-w-md">
+                            Track time, plan capacity, and manage workflows across both Tax Planning and Tax Preparation divisions.
+                        </p>
                     </div>
 
-                    {/* Sign In / Sign Up Toggle */}
-                    <div className="flex p-1 bg-zinc-800/60 rounded-xl mb-6 border border-white/5">
+                    {/* Middle — Feature highlights */}
+                    <div className="space-y-3 my-10">
+                        {[
+                            { icon: Clock, label: "Time Tracking", desc: "Role-specific charge codes", color: "text-yellow-500", bg: "bg-yellow-500/10 border-yellow-500/15" },
+                            { icon: BarChart3, label: "Capacity Planner", desc: "Model staffing & capacity", color: "text-blue-400", bg: "bg-blue-500/10 border-blue-500/15" },
+                            { icon: Layers, label: "Division Toggle", desc: "Planning & Preparation", color: "text-purple-400", bg: "bg-purple-500/10 border-purple-500/15" },
+                            { icon: Shield, label: "Access Control", desc: "Domain-restricted login", color: "text-green-400", bg: "bg-green-500/10 border-green-500/15" },
+                        ].map((f, i) => (
+                            <div key={i} className="flex items-center gap-4 group">
+                                <div className={`w-11 h-11 ${f.bg} border rounded-xl flex items-center justify-center shrink-0`}>
+                                    <f.icon size={18} className={f.color} />
+                                </div>
+                                <div>
+                                    <div className="text-base font-bold text-white">{f.label}</div>
+                                    <div className="text-sm text-zinc-500">{f.desc}</div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Bottom — Stats */}
+                    <div className="flex gap-8">
+                        {[
+                            { n: "8", label: "Roles" },
+                            { n: "2", label: "Divisions" },
+                            { n: "30+", label: "Charge Codes" },
+                        ].map((s, i) => (
+                            <div key={i}>
+                                <div className="text-3xl font-black text-yellow-500">{s.n}</div>
+                                <div className="text-xs text-zinc-500 font-semibold uppercase tracking-wider">{s.label}</div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            {/* ══════════════════════════════════════
+          RIGHT PANEL — Login Form
+      ══════════════════════════════════════ */}
+            <div className="w-full lg:w-[45%] flex flex-col items-center justify-center px-6 py-12 relative">
+                {/* Subtle top border glow on the dividing edge */}
+                <div className="hidden lg:block absolute left-0 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-yellow-500/20 to-transparent" />
+
+                {/* Mobile-only back link */}
+                <div className="lg:hidden w-full max-w-sm mb-8">
+                    <button
+                        onClick={() => router.push("/")}
+                        className="flex items-center gap-2 text-sm text-zinc-500 hover:text-white transition-colors group"
+                    >
+                        <ArrowLeft size={14} className="transition-transform group-hover:-translate-x-0.5" />
+                        Home
+                    </button>
+                </div>
+
+                <div className="w-full max-w-sm">
+                    {/* Mobile logo */}
+                    <div className="lg:hidden text-center mb-8">
+                        <div className="w-12 h-12 bg-yellow-500 rounded-2xl flex items-center justify-center font-black text-black text-lg mx-auto mb-3 shadow-lg shadow-yellow-500/20">
+                            BD
+                        </div>
+                        <div className="font-bold text-xl text-white">BudgetDog</div>
+                        <div className="text-yellow-500 text-xs font-semibold">Command Center</div>
+                    </div>
+
+                    {/* Header */}
+                    <div className="mb-8">
+                        <h1 className="text-2xl font-black text-white tracking-tight">
+                            {isLogin ? "Welcome back" : "Create account"}
+                        </h1>
+                        <p className="text-zinc-400 text-sm mt-1.5">
+                            {isLogin ? "Sign in to your workspace" : "Set up your team account"}
+                        </p>
+                    </div>
+
+                    {/* Toggle */}
+                    <div className="flex p-1 bg-zinc-900 rounded-xl mb-6 border border-white/[0.04]">
                         <button
                             type="button"
                             onClick={() => { setIsLogin(true); setError(null); }}
                             className={cn(
-                                "flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all",
-                                isLogin ? "bg-zinc-700/80 text-white shadow-sm" : "text-zinc-500 hover:text-zinc-300"
+                                "flex-1 py-2.5 text-sm font-bold rounded-lg transition-all",
+                                isLogin ? "bg-yellow-500 text-black shadow-sm" : "text-zinc-500 hover:text-zinc-300"
                             )}
                         >
                             Sign In
@@ -134,19 +231,18 @@ export default function LoginPage() {
                             type="button"
                             onClick={() => { setIsLogin(false); setError(null); }}
                             className={cn(
-                                "flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all",
-                                !isLogin ? "bg-zinc-700/80 text-white shadow-sm" : "text-zinc-500 hover:text-zinc-300"
+                                "flex-1 py-2.5 text-sm font-bold rounded-lg transition-all",
+                                !isLogin ? "bg-yellow-500 text-black shadow-sm" : "text-zinc-500 hover:text-zinc-300"
                             )}
                         >
                             Sign Up
                         </button>
                     </div>
 
-                    <form onSubmit={handleAuth} className="space-y-5">
-
-                        {/* Role Selection — Clean Grouped Dropdown */}
+                    <form onSubmit={handleAuth} className="space-y-4">
+                        {/* Role */}
                         <div>
-                            <label htmlFor="role-select" className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">
+                            <label htmlFor="role-select" className="block text-[11px] font-bold text-zinc-500 uppercase tracking-wider mb-2">
                                 Your Role
                             </label>
                             <div className="relative">
@@ -154,10 +250,10 @@ export default function LoginPage() {
                                     id="role-select"
                                     value={role}
                                     onChange={(e) => setRole(e.target.value)}
-                                    className="w-full bg-zinc-950/60 border border-zinc-700/50 rounded-xl py-3 px-4 pr-10 text-white text-sm font-medium focus:ring-2 focus:ring-yellow-500/40 focus:border-yellow-500/50 outline-none transition-all appearance-none cursor-pointer hover:border-zinc-600"
+                                    className="w-full bg-zinc-900 border border-white/[0.06] rounded-xl py-3 px-4 pr-10 text-white text-sm font-medium focus:ring-2 focus:ring-yellow-500/30 focus:border-yellow-500/40 outline-none transition-all appearance-none cursor-pointer hover:border-white/[0.1]"
                                 >
                                     {ROLE_OPTIONS.map((group) => (
-                                        <optgroup key={group.group} label={`── ${group.group} ──`}>
+                                        <optgroup key={group.group} label={group.group}>
                                             {group.roles.map((r) => (
                                                 <option key={r.value} value={r.value}>
                                                     {r.label}
@@ -167,17 +263,17 @@ export default function LoginPage() {
                                     ))}
                                 </select>
                                 <div className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none">
-                                    <ChevronDown size={16} />
+                                    <ChevronDown size={15} />
                                 </div>
                             </div>
                         </div>
 
-                        {/* Input Fields */}
+                        {/* Fields */}
                         <div className="space-y-3">
                             {!isLogin && (
-                                <div className="relative group/input">
-                                    <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within/input:text-yellow-500 transition-colors">
-                                        <User size={16} />
+                                <div className="relative">
+                                    <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-600">
+                                        <User size={15} />
                                     </div>
                                     <input
                                         type="text"
@@ -185,14 +281,14 @@ export default function LoginPage() {
                                         value={name}
                                         onChange={(e) => setName(e.target.value)}
                                         required={!isLogin}
-                                        className="w-full bg-zinc-950/60 border border-zinc-700/50 rounded-xl py-3 pl-10 pr-4 text-white text-sm focus:ring-2 focus:ring-yellow-500/40 focus:border-yellow-500/50 outline-none transition-all placeholder:text-zinc-600"
+                                        className="w-full bg-zinc-900 border border-white/[0.06] rounded-xl py-3 pl-10 pr-4 text-white text-sm focus:ring-2 focus:ring-yellow-500/30 focus:border-yellow-500/40 outline-none transition-all placeholder:text-zinc-600"
                                     />
                                 </div>
                             )}
 
-                            <div className="relative group/input">
-                                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within/input:text-yellow-500 transition-colors">
-                                    <Mail size={16} />
+                            <div className="relative">
+                                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-600">
+                                    <Mail size={15} />
                                 </div>
                                 <input
                                     type="email"
@@ -200,13 +296,13 @@ export default function LoginPage() {
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     required
-                                    className="w-full bg-zinc-950/60 border border-zinc-700/50 rounded-xl py-3 pl-10 pr-4 text-white text-sm focus:ring-2 focus:ring-yellow-500/40 focus:border-yellow-500/50 outline-none transition-all placeholder:text-zinc-600"
+                                    className="w-full bg-zinc-900 border border-white/[0.06] rounded-xl py-3 pl-10 pr-4 text-white text-sm focus:ring-2 focus:ring-yellow-500/30 focus:border-yellow-500/40 outline-none transition-all placeholder:text-zinc-600"
                                 />
                             </div>
 
-                            <div className="relative group/input">
-                                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within/input:text-yellow-500 transition-colors">
-                                    <Lock size={16} />
+                            <div className="relative">
+                                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-600">
+                                    <Lock size={15} />
                                 </div>
                                 <input
                                     type={showPassword ? "text" : "password"}
@@ -215,20 +311,20 @@ export default function LoginPage() {
                                     onChange={(e) => setPassword(e.target.value)}
                                     required
                                     minLength={6}
-                                    className="w-full bg-zinc-950/60 border border-zinc-700/50 rounded-xl py-3 pl-10 pr-10 text-white text-sm focus:ring-2 focus:ring-yellow-500/40 focus:border-yellow-500/50 outline-none transition-all placeholder:text-zinc-600"
+                                    className="w-full bg-zinc-900 border border-white/[0.06] rounded-xl py-3 pl-10 pr-10 text-white text-sm focus:ring-2 focus:ring-yellow-500/30 focus:border-yellow-500/40 outline-none transition-all placeholder:text-zinc-600"
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors"
+                                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-zinc-400 transition-colors"
                                 >
-                                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                                    {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
                                 </button>
                             </div>
                         </div>
 
                         {error && (
-                            <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-300 text-xs text-center">
+                            <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-xs text-center font-medium">
                                 {error}
                             </div>
                         )}
@@ -236,10 +332,10 @@ export default function LoginPage() {
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-300 hover:to-yellow-400 text-black font-bold py-3.5 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.01] active:scale-[0.99] shadow-lg shadow-yellow-500/20"
+                            className="w-full bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-3.5 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.01] active:scale-[0.99] shadow-lg shadow-yellow-500/15"
                         >
                             {isLoading ? (
-                                <Loader2 size={20} className="animate-spin" />
+                                <Loader2 size={18} className="animate-spin" />
                             ) : (
                                 isLogin ? "Sign In" : "Create Account"
                             )}
@@ -249,10 +345,10 @@ export default function LoginPage() {
                     {/* Divider */}
                     <div className="relative my-6">
                         <div className="absolute inset-0 flex items-center">
-                            <div className="w-full border-t border-zinc-800" />
+                            <div className="w-full border-t border-white/[0.04]" />
                         </div>
-                        <div className="relative flex justify-center text-xs uppercase">
-                            <span className="bg-zinc-900 px-3 text-zinc-600 font-medium">Or</span>
+                        <div className="relative flex justify-center text-[10px] uppercase tracking-wider">
+                            <span className="bg-[#0a0a0a] px-3 text-zinc-600 font-bold">Or</span>
                         </div>
                     </div>
 
@@ -261,9 +357,9 @@ export default function LoginPage() {
                         type="button"
                         onClick={handleGoogleLogin}
                         disabled={isLoading}
-                        className="w-full bg-zinc-800/60 hover:bg-zinc-700/60 text-white font-medium py-3.5 rounded-xl transition-all duration-300 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed border border-white/5 hover:border-white/10"
+                        className="w-full bg-zinc-900 hover:bg-zinc-800 text-white font-medium py-3.5 rounded-xl transition-all duration-200 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed border border-white/[0.06] hover:border-white/[0.1]"
                     >
-                        <svg className="w-5 h-5" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4" viewBox="0 0 24 24">
                             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
                             <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
                             <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
@@ -271,12 +367,12 @@ export default function LoginPage() {
                         </svg>
                         Continue with Google
                     </button>
-                </div>
 
-                {/* Footer */}
-                <p className="text-zinc-600 text-xs text-center mt-6">
-                    Protected by Supabase Auth &bull; Restricted Domain Access
-                </p>
+                    {/* Footer */}
+                    <p className="text-zinc-600 text-xs text-center mt-8 font-medium">
+                        Protected by Supabase Auth &bull; Restricted Domain Access
+                    </p>
+                </div>
             </div>
         </div>
     );
