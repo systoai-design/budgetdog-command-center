@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { Mail, Lock, User, Eye, EyeOff, Loader2 } from "lucide-react";
+import { Mail, Lock, User, Eye, EyeOff, Loader2, ChevronDown } from "lucide-react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -10,8 +10,32 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+// All available roles grouped by division
+const ROLE_OPTIONS = [
+  {
+    group: "Tax Planning",
+    roles: [
+      { value: "advisor", label: "Advisor", icon: "📈" },
+      { value: "support", label: "Support Staff", icon: "🛠️" },
+    ],
+  },
+  {
+    group: "Tax Preparation",
+    roles: [
+      { value: "tax_planning_admin", label: "Tax Planning Admin", icon: "📋" },
+      { value: "tax_prep_admin", label: "Tax Preparation Admin", icon: "📑" },
+      { value: "preparer_l1", label: "Tax Preparer Level 1", icon: "📝" },
+      { value: "preparer_l2", label: "Tax Preparer Level 2", icon: "✏️" },
+      { value: "reviewer", label: "Tax Return Reviewer", icon: "🔍" },
+      { value: "project_manager", label: "Project Manager", icon: "📊" },
+    ],
+  },
+];
+
+const ALL_ROLES = ROLE_OPTIONS.flatMap((g) => g.roles);
+
 export default function Login() {
-  const [role, setRole] = useState<"advisor" | "support">("advisor");
+  const [role, setRole] = useState<string>("advisor");
   const { loginWithGoogle, loginWithEmail, signupWithEmail, setRole: saveRolePreference } = useAuth();
 
   const [isLogin, setIsLogin] = useState(true);
@@ -22,23 +46,26 @@ export default function Login() {
   // Form State
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState(""); // For Sign Up
+  const [name, setName] = useState("");
+
+  const selectedRole = ALL_ROLES.find((r) => r.value === role);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
     try {
-      saveRolePreference(role);
+      // Only persist advisor/support as base role; other roles are view-mode level
+      if (role === "advisor" || role === "support") {
+        saveRolePreference(role);
+      } else {
+        saveRolePreference("advisor"); // default base role for tax prep users
+      }
 
       if (isLogin) {
         await loginWithEmail(email, password);
       } else {
         await signupWithEmail(email, password, name);
-        // If successful, maybe show a success message or auto-login?
-        // Supabase usually requires email confirmation for signup by default, 
-        // but let's assume it might auto-login or prompt. 
-        // For better UX, let's treat it as a success and maybe switch to login or wait for redirect.
         alert("Account created! Please check your email for confirmation if required, or sign in.");
         setIsLogin(true);
       }
@@ -54,7 +81,11 @@ export default function Login() {
     setIsLoading(true);
     setError(null);
     try {
-      saveRolePreference(role);
+      if (role === "advisor" || role === "support") {
+        saveRolePreference(role);
+      } else {
+        saveRolePreference("advisor");
+      }
       await loginWithGoogle();
     } catch (err: any) {
       console.error("Google Login failed:", err);
@@ -106,44 +137,34 @@ export default function Login() {
 
           <form onSubmit={handleAuth} className="space-y-6">
 
-            {/* Role Selection */}
+            {/* Role Selection — Grouped Dropdown */}
             <div>
-              <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-3 text-center">
+              <label htmlFor="role-select" className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2 text-center">
                 Select Your Role
               </label>
-              <div className="grid grid-cols-2 gap-4">
-                <button
-                  type="button"
-                  onClick={() => setRole("advisor")}
-                  className={cn(
-                    "p-3 rounded-xl border transition-all duration-300 flex flex-col items-center gap-2 relative overflow-hidden group/btn",
-                    role === "advisor"
-                      ? "bg-blue-500/10 border-blue-500/50 text-blue-400 shadow-[0_0_20px_rgba(59,130,246,0.15)]"
-                      : "bg-zinc-800/50 border-white/5 text-zinc-400 hover:bg-zinc-800 hover:border-white/10"
-                  )}
+              <div className="relative">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-lg pointer-events-none">
+                  {selectedRole?.icon || "👤"}
+                </div>
+                <select
+                  id="role-select"
+                  value={role}
+                  onChange={(e) => setRole(e.target.value)}
+                  className="w-full bg-zinc-950/50 border border-zinc-800 rounded-lg py-3 pl-10 pr-10 text-white text-sm font-medium focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500 outline-none transition-all appearance-none cursor-pointer hover:border-zinc-600"
                 >
-                  <span className="text-xl transform transition-transform group-hover/btn:scale-110 duration-300">📈</span>
-                  <span className="font-semibold text-xs">Advisor</span>
-                  {role === "advisor" && (
-                    <div className="absolute inset-0 border-2 border-blue-500/50 rounded-xl animate-pulse"></div>
-                  )}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setRole("support")}
-                  className={cn(
-                    "p-3 rounded-xl border transition-all duration-300 flex flex-col items-center gap-2 relative overflow-hidden group/btn",
-                    role === "support"
-                      ? "bg-purple-500/10 border-purple-500/50 text-purple-400 shadow-[0_0_20px_rgba(168,85,247,0.15)]"
-                      : "bg-zinc-800/50 border-white/5 text-zinc-400 hover:bg-zinc-800 hover:border-white/10"
-                  )}
-                >
-                  <span className="text-xl transform transition-transform group-hover/btn:scale-110 duration-300">🛠️</span>
-                  <span className="font-semibold text-xs">Support</span>
-                  {role === "support" && (
-                    <div className="absolute inset-0 border-2 border-purple-500/50 rounded-xl animate-pulse"></div>
-                  )}
-                </button>
+                  {ROLE_OPTIONS.map((group) => (
+                    <optgroup key={group.group} label={group.group}>
+                      {group.roles.map((r) => (
+                        <option key={r.value} value={r.value}>
+                          {r.icon}  {r.label}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </select>
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none">
+                  <ChevronDown size={16} />
+                </div>
               </div>
             </div>
 
