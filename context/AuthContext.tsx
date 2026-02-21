@@ -146,7 +146,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             }
 
             // Redirect if on login page
-            if (window.location.pathname === "/") {
+            if (window.location.pathname === "/" || window.location.pathname === "/login") {
                 router.push("/dashboard");
             }
         } else {
