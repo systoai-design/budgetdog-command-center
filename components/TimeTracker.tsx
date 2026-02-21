@@ -43,10 +43,78 @@ const SUPPORT_CODES = [
     "Admin/Other",
 ];
 
+// --- Tax Preparation Division Charge Codes ---
+const TAX_PLANNING_ADMIN_CODES = [
+    "New Client Onboarding",
+    "Prep-Kickoff Call",
+    "Prep-Deep Dive Call",
+    "Prep-Tax Projection Call",
+    "Client Follow-up Kickoff Call",
+    "Client Follow-up Deep Dive Call",
+    "Client Follow-up Tax Projection Call",
+    "Client Follow-up Check In Call",
+    "Admin (Responding to clients)",
+    "Admin (Not responding to clients)",
+];
+
+const TAX_PREP_ADMIN_CODES = [
+    "Government Forms Organizer Review",
+    "Schedule C/Rental Organizer Review",
+    "Business Tax Return Organizer Review",
+    "Preparing 1040 Workbooks",
+    "Preparing Business Return Workbooks",
+    "Draft Return Approval",
+    "E-signature",
+    "E-filing",
+    "Admin (Responding to clients)",
+    "Admin (Not responding to clients)",
+];
+
+const PREPARER_L1_CODES = [
+    "1040 Workbook Preparation",
+    "Business Return Preparation",
+    "Admin (Responding to clients)",
+    "Admin (Not responding to clients)",
+];
+
+const PREPARER_L2_CODES = [
+    "1040 Workbook Review",
+    "Business Return Review",
+    "Admin (Responding to clients)",
+    "Admin (Not responding to clients)",
+];
+
+const REVIEWER_CODES = [
+    "1040 Workbook Final Review",
+    "Business Return Final Review",
+    "Admin (Responding to clients)",
+    "Admin (Not responding to clients)",
+];
+
+const PROJECT_MANAGER_CODES = [
+    "Conducted Daily Meeting with Tax Team",
+    "1-1 Touchpoints with Tax Team",
+    "Assigning Individual Returns",
+    "Assigning Business Returns",
+];
+
+// Map viewMode -> charge codes
+const CODE_MAP: Record<string, string[]> = {
+    advisor: ADVISOR_CODES,
+    support: SUPPORT_CODES,
+    admin: ADVISOR_CODES, // Admin sees advisor codes by default (Planning)
+    tax_planning_admin: TAX_PLANNING_ADMIN_CODES,
+    tax_prep_admin: TAX_PREP_ADMIN_CODES,
+    preparer_l1: PREPARER_L1_CODES,
+    preparer_l2: PREPARER_L2_CODES,
+    reviewer: REVIEWER_CODES,
+    project_manager: PROJECT_MANAGER_CODES,
+};
+
 interface TimeEntry {
     id: string;
     charge_code: string;
-    category: "advisor" | "support" | "admin";
+    category: string;
     duration: number; // in minutes
     notes: string;
     timestamp: string; // ISO string
@@ -160,11 +228,10 @@ const EditModal = ({
 };
 
 export default function TimeTracker() {
-    const { user, viewMode } = useAuth();
+    const { user, viewMode, division } = useAuth();
 
-    // Config
-    const isAdvisor = viewMode === "advisor";
-    const currentCodes = isAdvisor ? ADVISOR_CODES : SUPPORT_CODES;
+    // Config: Select charge codes based on current viewMode
+    const currentCodes = CODE_MAP[viewMode] || ADVISOR_CODES;
 
     // State
     const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
@@ -177,7 +244,7 @@ export default function TimeTracker() {
 
     // Modal State
     const [editingEntry, setEditingEntry] = useState<TimeEntry | null>(null);
-    const [isLogExpanded, setIsLogExpanded] = useState(true); // Default to expanded, or false if they want to save space initially? "does not eat up too long" suggests maybe false or just the ability. Let's default true but easy to close. User said "it does not eat up", maybe default false? I'll stick to true but they can close it. Or maybe false is safer. Let's do `false`.
+    const [isLogExpanded, setIsLogExpanded] = useState(true);
 
     // Fetch entries
     // Fetch entries

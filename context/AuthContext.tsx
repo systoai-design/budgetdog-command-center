@@ -5,6 +5,22 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { Session } from "@supabase/supabase-js";
 
+// --- Division & Role Types ---
+export type Division = "planning" | "preparation";
+
+export type ViewMode =
+    // Tax Planning division roles
+    | "advisor"
+    | "support"
+    | "admin"
+    // Tax Preparation division roles
+    | "tax_planning_admin"
+    | "tax_prep_admin"
+    | "preparer_l1"
+    | "preparer_l2"
+    | "reviewer"
+    | "project_manager";
+
 interface User {
     email: string;
     name: string;
@@ -18,8 +34,10 @@ interface User {
 interface AuthContextType {
     user: User | null;
     session: Session | null;
-    viewMode: "advisor" | "support" | "admin";
-    setViewMode: (mode: "advisor" | "support" | "admin") => void;
+    viewMode: ViewMode;
+    setViewMode: (mode: ViewMode) => void;
+    division: Division;
+    setDivision: (division: Division) => void;
     loginWithGoogle: () => Promise<void>;
     loginWithEmail: (email: string, password: string) => Promise<void>;
     signupWithEmail: (email: string, password: string, name: string) => Promise<void>;
@@ -33,10 +51,21 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [session, setSession] = useState<Session | null>(null);
-    const [viewMode, setViewMode] = useState<"advisor" | "support" | "admin">("advisor");
+    const [viewMode, setViewMode] = useState<ViewMode>("advisor");
+    const [division, setDivisionState] = useState<Division>("planning");
     const router = useRouter();
 
     const [config, setConfig] = useState<{ admins: string[], domains: string[] }>({ admins: [], domains: [] });
+
+    // When division changes, reset viewMode to appropriate default
+    const setDivision = (newDivision: Division) => {
+        setDivisionState(newDivision);
+        if (user?.isSuperAdmin) {
+            setViewMode(newDivision === "planning" ? "admin" : "tax_planning_admin");
+        } else {
+            setViewMode(newDivision === "planning" ? "advisor" : "tax_planning_admin");
+        }
+    };
 
     useEffect(() => {
         // Fetch Admin Config
@@ -51,10 +80,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         // 1. Check active session
         supabase.auth.getSession().then(({ data: { session } }) => {
-            // We need to wait for config to be loaded? 
-            // Actually, we can pass config to handleSession, but it might be empty initially.
-            // Let's rely on the useEffect dependency or check inside handleSession if config is ready?
-            // Simpler: Just refresh session logic when config changes.
+            // Wait for config to load
         });
     }, []);
 
@@ -73,7 +99,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         });
 
         return () => subscription.unsubscribe();
-    }, [config]); // Add config dependency
+    }, [config]);
 
     const handleSession = (session: Session | null) => {
         setSession(session);
@@ -81,22 +107,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const email = session.user.email;
 
             // Domain Restriction
-            // Fallback: Always allow systo.ai and budgetdog.com
             const isHardcodedAllowed = email === "systo.ai@gmail.com" || email.endsWith("@budgetdog.com");
             const isDynamicAllowed = config.domains.some(d => email.endsWith(d));
-
-            // If config hasn't loaded yet, strict check might be premature. 
-            // However, hardcoded allowed will always pass.
-            // For new dynamic domains, they might be blocked until config loads.
-            // This is a trade-off. We could add a "loading" state.
 
             const isAllowed = isHardcodedAllowed || isDynamicAllowed;
 
             if (!isAllowed && config.domains.length > 0) {
-                // Only enforce if we have loaded at least some config, or if we are sure.
-                // But wait, if config is empty (network error), we default to hardcoded.
-                // That's safe.
-
                 alert("Access Denied: Domain not authorized.");
                 supabase.auth.signOut();
                 setUser(null);
@@ -122,10 +138,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 position: session.user.user_metadata.position,
             });
 
-            // Set initial view mode
+            // Set initial view mode based on division
             if (isSuperAdmin) {
-                // Default to admin view for super admins ensures they see the dropdown
-                setViewMode("admin");
+                setViewMode(division === "planning" ? "admin" : "tax_planning_admin");
             } else {
                 setViewMode(role);
             }
@@ -220,7 +235,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     return (
-        <AuthContext.Provider value={{ user, session, viewMode, setViewMode, loginWithGoogle, loginWithEmail, signupWithEmail, logout, setRole, updateProfile }}>
+        <AuthContext.Provider value={{ user, session, viewMode, setViewMode, division, setDivision, loginWithGoogle, loginWithEmail, signupWithEmail, logout, setRole, updateProfile }}>
             {children}
         </AuthContext.Provider>
     );

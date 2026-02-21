@@ -10,7 +10,7 @@ import { Tab, TabsList } from "@/components/Tabs";
 import { Clock, TrendingUp, BarChart3, LayoutDashboard } from "lucide-react";
 
 export default function Dashboard() {
-    const { user, viewMode } = useAuth();
+    const { user, viewMode, division } = useAuth();
     const router = useRouter();
     const [activeTab, setActiveTab] = useState<"time" | "capacity" | "actuals">("capacity");
 
@@ -20,12 +20,15 @@ export default function Dashboard() {
         }
     }, [user, router]);
 
+    // Show capacity planner for admin-level views in either division
+    const isAdminView = viewMode === "admin" || viewMode === "tax_planning_admin";
+
     // Redirect if on capacity tab but not in admin view
     useEffect(() => {
-        if (viewMode !== "admin" && activeTab === "capacity") {
+        if (!isAdminView && activeTab === "capacity") {
             setActiveTab("time");
         }
-    }, [viewMode, activeTab]);
+    }, [isAdminView, activeTab]);
 
     if (!user) return null;
 
@@ -45,7 +48,7 @@ export default function Dashboard() {
                 </div>
 
                 <TabsList>
-                    {viewMode === "admin" && (
+                    {isAdminView && (
                         <Tab
                             label="Capacity Planner"
                             value="capacity"
@@ -73,7 +76,7 @@ export default function Dashboard() {
 
             <main className="max-w-7xl mx-auto pb-12">
                 {activeTab === "time" && <TimeTracker />}
-                {activeTab === "capacity" && viewMode === "admin" && <HiringSimulator />}
+                {activeTab === "capacity" && isAdminView && <HiringSimulator />}
                 {activeTab === "actuals" && <ActualsDashboard />}
             </main>
         </div>

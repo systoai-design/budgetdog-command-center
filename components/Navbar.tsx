@@ -7,15 +7,33 @@ import { useAuth } from "@/context/AuthContext";
 import { LayoutDashboard, LogOut } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import ProfileModal from "@/components/ProfileModal";
+import type { Division, ViewMode } from "@/context/AuthContext";
+
+// --- View Mode Options per Division ---
+const PLANNING_VIEWS: { value: ViewMode; label: string }[] = [
+    { value: "admin", label: "Super Admin (All)" },
+    { value: "advisor", label: "Advisor View" },
+    { value: "support", label: "Support View" },
+];
+
+const PREPARATION_VIEWS: { value: ViewMode; label: string }[] = [
+    { value: "tax_planning_admin", label: "Tax Planning Admin" },
+    { value: "tax_prep_admin", label: "Tax Preparation Admin" },
+    { value: "preparer_l1", label: "Preparer Level 1" },
+    { value: "preparer_l2", label: "Preparer Level 2" },
+    { value: "reviewer", label: "Tax Return Reviewer" },
+    { value: "project_manager", label: "Project Manager" },
+];
 
 export default function Navbar() {
-    const { user, logout, viewMode, setViewMode } = useAuth();
+    const { user, logout, viewMode, setViewMode, division, setDivision } = useAuth();
     const pathname = usePathname();
     const [isProfileOpen, setIsProfileOpen] = useState(false);
 
     if (!user) return null;
 
     const isActive = (path: string) => pathname === path;
+    const currentViews = division === "planning" ? PLANNING_VIEWS : PREPARATION_VIEWS;
 
     return (
         <>
@@ -44,17 +62,44 @@ export default function Navbar() {
                         </div>
 
                         <div className="flex items-center gap-4">
+                            {/* Division Toggle (always visible for super admins) */}
+                            {user.isSuperAdmin && (
+                                <div className="hidden md:flex items-center bg-gray-100 dark:bg-zinc-800 rounded-lg p-0.5 border border-border-light dark:border-border-dark">
+                                    <button
+                                        onClick={() => setDivision("planning")}
+                                        className={`px-3 py-1.5 rounded-md text-xs font-bold uppercase tracking-wider transition-all ${division === "planning"
+                                                ? "bg-primary text-black shadow-sm"
+                                                : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                                            }`}
+                                    >
+                                        Planning
+                                    </button>
+                                    <button
+                                        onClick={() => setDivision("preparation")}
+                                        className={`px-3 py-1.5 rounded-md text-xs font-bold uppercase tracking-wider transition-all ${division === "preparation"
+                                                ? "bg-primary text-black shadow-sm"
+                                                : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                                            }`}
+                                    >
+                                        Preparation
+                                    </button>
+                                </div>
+                            )}
+
+                            {/* View Mode Dropdown (role-aware based on division) */}
                             {user.isSuperAdmin && (
                                 <div className="hidden md:flex items-center gap-2">
                                     <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">View:</span>
                                     <select
                                         value={viewMode}
-                                        onChange={(e) => setViewMode(e.target.value as any)}
+                                        onChange={(e) => setViewMode(e.target.value as ViewMode)}
                                         className="bg-surface-light dark:bg-zinc-800 border border-border-light dark:border-border-dark text-gray-900 dark:text-white text-xs rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-primary"
                                     >
-                                        <option value="admin">Super Admin (All)</option>
-                                        <option value="advisor">Advisor View</option>
-                                        <option value="support">Support View</option>
+                                        {currentViews.map((v) => (
+                                            <option key={v.value} value={v.value}>
+                                                {v.label}
+                                            </option>
+                                        ))}
                                     </select>
                                 </div>
                             )}

@@ -21,6 +21,7 @@ import {
     RefreshCw,
     HelpCircle,
 } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 // ... (existing imports)
 
@@ -139,6 +140,9 @@ const SliderControl = ({ label, value, min, max, onChange, unit, step = 1, stric
 // --- Simulator Logic ---
 
 export default function HiringSimulator() {
+    const { division } = useAuth();
+    const isPreparation = division === "preparation";
+
     // Simulator State
     const [numClients, setNumClients] = useState(120);
     const [numAdvisors, setNumAdvisors] = useState(4);
@@ -146,11 +150,12 @@ export default function HiringSimulator() {
     const [hoursPerClient, setHoursPerClient] = useState(5.5);
     const [advisorCapacity, setAdvisorCapacity] = useState(140);
     const [supportCapacity, setSupportCapacity] = useState(140);
-    const [avgClientFee, setAvgClientFee] = useState(350);
+    // Planning: $350/mo, Preparation: $333/mo ($4,000/yr ÷ 12)
+    const [avgClientFee, setAvgClientFee] = useState(isPreparation ? 333 : 350);
     const [advisorMonthlyCost, setAdvisorMonthlyCost] = useState(6000);
     const [supportMonthlyCost, setSupportMonthlyCost] = useState(4000);
     const [growthRate, setGrowthRate] = useState(5);
-    const [isAnnualRevenue, setIsAnnualRevenue] = useState(false);
+    const [isAnnualRevenue, setIsAnnualRevenue] = useState(isPreparation);
 
     // Actuals State
     const [totalActualHours, setTotalActualHours] = useState(0);
