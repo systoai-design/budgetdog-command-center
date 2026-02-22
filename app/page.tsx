@@ -192,9 +192,9 @@ export default function LandingPage() {
       {/* ═══════════════════════════════════════════
           HERO — Massive typography, stark contrast
       ═══════════════════════════════════════════ */}
-      <section className="relative h-screen flex flex-col items-center justify-center px-6 lg:px-10 z-10 pointer-events-none">
+      <section className="relative min-h-screen pt-32 sm:pt-40 pb-20 sm:pb-32 flex flex-col items-center justify-start px-6 lg:px-10 z-10 pointer-events-none">
 
-        <div className="max-w-5xl mx-auto w-full text-center relative pointer-events-auto mt-20">
+        <div className="max-w-5xl mx-auto w-full text-center relative pointer-events-auto">
           {/* Minimalist Badge */}
           <div className="animate-apple-entrance inline-flex items-center gap-2 border border-white/[0.1] bg-white/[0.05] backdrop-blur-md rounded-full px-4 py-1.5 mb-8 shadow-lg shadow-white/5 hover:bg-white/[0.1] transition-colors cursor-default">
             <span className="text-[10px] font-bold text-zinc-300 uppercase tracking-widest flex items-center gap-2">
@@ -202,7 +202,7 @@ export default function LandingPage() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-yellow-500"></span>
               </span>
-              New: Capacity Planner 2.0
+              Internal Access Verified
             </span>
           </div>
 
@@ -214,7 +214,7 @@ export default function LandingPage() {
               transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
               className="text-white block drop-shadow-2xl"
             >
-              Supercharge Your Firm
+              Internal Operations
             </motion.span>
             <motion.span
               initial={{ opacity: 0, y: 30 }}
@@ -222,7 +222,7 @@ export default function LandingPage() {
               transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
               className="text-transparent bg-clip-text bg-gradient-to-b from-yellow-300 via-yellow-500 to-yellow-700 block drop-shadow-[0_0_40px_rgba(234,179,8,0.3)] pb-2"
             >
-              Tax Command Center
+              Command Center
             </motion.span>
           </h1>
 
@@ -232,7 +232,7 @@ export default function LandingPage() {
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
             className="text-lg sm:text-xl text-zinc-400 max-w-2xl mx-auto font-medium tracking-tight mb-10 leading-relaxed"
           >
-            One platform to command the entire tax operation. Capacity mapping, frictionless time tracking, and instant role switching.
+            Live data, capacity planning playground, time tracking, and automated reporting.
           </motion.p>
 
           <motion.div
@@ -271,11 +271,11 @@ export default function LandingPage() {
             {/* Actual App Screenshot */}
             <div className="relative aspect-[16/9] w-full rounded-lg sm:rounded-2xl overflow-hidden border border-white/5 bg-[#0a0a0a]">
               <Image
-                src="/dashboard-mockup.png"
+                src="/bento-actuals.png"
                 alt="Budgetdog Command Center Dashboard"
                 fill
                 priority
-                className="object-cover transition-transform duration-1000 ease-out group-hover:scale-[1.02]"
+                className="object-cover object-top transition-transform duration-1000 ease-out group-hover:scale-[1.02]"
               />
 
               {/* Embedded Glass Reflection */}
