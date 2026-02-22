@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import Image from "next/image";
 import { motion } from "framer-motion";
+import Lenis from 'lenis';
 
 import { CanvasBackground } from "@/components/3d/CanvasBackground";
 import { useSceneStore } from "@/store/useSceneStore";
@@ -73,6 +74,32 @@ export default function LandingPage() {
   const { user } = useAuth();
   const router = useRouter();
   const { setPointer, setScrollY } = useSceneStore();
+  const [randomWidths, setRandomWidths] = useState<number[]>([]);
+
+  // Hydration-safe random widths
+  useEffect(() => {
+    setRandomWidths([...Array(4)].map(() => Math.random() * 60 + 20));
+  }, []);
+
+  // Lenis Smooth Scroll Setup
+  useEffect(() => {
+    const lenis = new Lenis({
+      lerp: 0.08,
+      wheelMultiplier: 1.2,
+      smoothWheel: true,
+    });
+
+    function raf(time: number) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+
+    requestAnimationFrame(raf);
+
+    return () => {
+      lenis.destroy();
+    };
+  }, []);
 
   useEffect(() => {
     if (user) router.push("/dashboard");
@@ -304,7 +331,7 @@ export default function LandingPage() {
                               <div className="w-8 h-3 bg-yellow-500/50 rounded" />
                             </div>
                             <div className="h-2 w-full bg-white/[0.05] rounded-full overflow-hidden">
-                              <div className="h-full bg-yellow-500" style={{ width: `${Math.random() * 60 + 20}%` }} />
+                              <div className="h-full bg-yellow-500 transition-all duration-1000 ease-out" style={{ width: randomWidths.length > 0 ? `${randomWidths[i]}%` : '0%' }} />
                             </div>
                           </div>
                         ))}
