@@ -22,6 +22,7 @@ import {
     AlertTriangle,
     RefreshCw,
     HelpCircle,
+    LucideIcon
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
@@ -65,7 +66,7 @@ const MetricCard = ({
     valueColorClass = "text-gray-900 dark:text-white",
     tooltip,
 }: {
-    icon: React.ElementType;
+    icon: LucideIcon;
     label: string;
     value: string | number;
     subtext?: string;

@@ -3,6 +3,7 @@
 import React from "react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { LucideIcon } from "lucide-react";
 
 function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
@@ -13,7 +14,7 @@ interface TabProps {
     value: string;
     isActive: boolean;
     onClick: () => void;
-    icon?: React.ElementType;
+    icon?: LucideIcon;
 }
 
 export const Tab = ({ label, isActive, onClick, icon: Icon }: TabProps) => (

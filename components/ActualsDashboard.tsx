@@ -14,7 +14,7 @@ import {
     Pie,
     Cell,
 } from "recharts";
-import { Activity, PieChart as PieIcon, BarChart3, TrendingUp, Download } from "lucide-react";
+import { Activity, PieChart as PieIcon, BarChart3, TrendingUp, Download, LucideIcon } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -25,7 +25,7 @@ function cn(...inputs: ClassValue[]) {
 
 // COLORS moved to component scope for semantic clarity
 
-const Card = ({ children, title, icon: Icon }: { children: React.ReactNode; title: string; icon: React.ElementType }) => (
+const Card = ({ children, title, icon: Icon }: { children: React.ReactNode; title: string; icon: LucideIcon }) => (
     <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl p-6 shadow-sm flex flex-col h-full">
         <div className="flex items-center gap-2 mb-6 text-primary">
             <Icon size={18} />
