@@ -115,7 +115,7 @@ export default function LandingPage() {
             </button>
             <button
               onClick={() => window.open("/login", "_blank")}
-              className="group relative overflow-hidden bg-white text-black font-semibold text-xs sm:text-sm px-5 sm:px-7 py-2.5 sm:py-3 rounded-full transition-all hover:scale-[1.02] hover:bg-yellow-500 hover:text-black active:scale-[0.98] shadow-lg shadow-white/10 hover:shadow-yellow-500/20"
+              className="group relative overflow-hidden bg-white text-black font-semibold text-xs sm:text-sm px-5 sm:px-7 py-2.5 sm:py-3 rounded-full transition-all duration-500 ease-out hover:scale-[1.02] hover:bg-yellow-500 hover:text-black active:scale-[0.98] shadow-lg shadow-white/10 hover:shadow-yellow-500/20"
             >
               <span className="relative z-10 transition-colors">Command Center</span>
               <div className="absolute inset-0 h-full w-[200%] rotate-45 bg-white/40 group-hover:animate-[shine_3s_infinite_cubic-bezier(0.4,0,0.2,1)]" style={{ left: '-100%', top: '-100%' }} />
