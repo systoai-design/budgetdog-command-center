@@ -49,7 +49,7 @@ const Card = ({
 }) => (
     <div
         className={cn(
-            "bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl shadow-sm",
+            "bg-white/[0.02] backdrop-blur-3xl border border-white/[0.05] rounded-3xl overflow-hidden shadow-2xl shadow-black/50 p-6 md:p-8",
             className
         )}
     >
@@ -63,7 +63,7 @@ const MetricCard = ({
     value,
     subtext,
     iconColorClass,
-    valueColorClass = "text-gray-900 dark:text-white",
+    valueColorClass = "text-white",
     tooltip,
 }: {
     icon: LucideIcon;
@@ -74,13 +74,13 @@ const MetricCard = ({
     valueColorClass?: string;
     tooltip?: string;
 }) => (
-    <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl p-5 shadow-sm flex items-center gap-4 relative group">
-        <div className={cn("p-3 rounded-lg bg-gray-100 dark:bg-zinc-800", iconColorClass)}>
-            <Icon size={24} />
+    <div className="bg-white/[0.02] backdrop-blur-3xl border border-white/[0.05] rounded-3xl p-6 shadow-2xl flex items-center gap-5 relative group transition-all hover:bg-white/[0.04]">
+        <div className={cn("p-4 rounded-2xl bg-white/[0.05] border border-white/[0.1] shadow-inner", iconColorClass)}>
+            <Icon size={26} className="text-current drop-shadow-md" />
         </div>
         <div>
-            <div className="flex items-center gap-1.5">
-                <div className="text-sm text-gray-500 dark:text-gray-400">{label}</div>
+            <div className="flex items-center gap-2 mb-1">
+                <div className="text-sm font-medium text-zinc-400 tracking-tight">{label}</div>
                 {tooltip && (
                     <div className="group/tooltip relative">
                         <HelpCircle size={14} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 cursor-help" />

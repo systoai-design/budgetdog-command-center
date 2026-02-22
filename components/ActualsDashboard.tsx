@@ -26,10 +26,12 @@ function cn(...inputs: ClassValue[]) {
 // COLORS moved to component scope for semantic clarity
 
 const Card = ({ children, title, icon: Icon }: { children: React.ReactNode; title: string; icon: LucideIcon }) => (
-    <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl p-6 shadow-sm flex flex-col h-full">
-        <div className="flex items-center gap-2 mb-6 text-primary">
-            <Icon size={18} />
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white">{title}</h3>
+    <div className="bg-white/[0.02] backdrop-blur-3xl border border-white/[0.05] rounded-3xl p-6 shadow-2xl flex flex-col h-full hover:bg-white/[0.03] transition-colors">
+        <div className="flex items-center gap-3 mb-6 text-yellow-500">
+            <div className="p-2.5 bg-white/[0.05] rounded-xl border border-white/[0.1] shadow-inner">
+                <Icon size={20} className="drop-shadow-md" />
+            </div>
+            <h3 className="text-xl font-bold text-white tracking-tight">{title}</h3>
         </div>
         <div className="flex-1 min-h-[250px] w-full relative">
             {children}

@@ -87,13 +87,19 @@ export default function LandingPage() {
         .delay-300 { animation-delay: 0.3s; }
         .delay-400 { animation-delay: 0.4s; }
         .delay-500 { animation-delay: 0.5s; }
+        
+        @keyframes shine {
+            0% { left: -100%; top: -100%; }
+            20% { left: 100%; top: 100%; }
+            100% { left: 100%; top: 100%; }
+        }
       `}</style>
 
       {/* ═══════════════════════════════════════════
           ISLAND NAV — Apple Frosted Pill
       ═══════════════════════════════════════════ */}
-      <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-3xl animate-apple-entrance">
-        <div className="bg-[#1c1c1e]/40 backdrop-blur-[40px] border border-white/[0.08] rounded-full px-6 py-3 flex items-center justify-between shadow-2xl shadow-black/50">
+      <nav className="fixed top-4 sm:top-6 left-1/2 -translate-x-1/2 z-50 w-[95%] sm:w-[90%] max-w-5xl animate-apple-entrance">
+        <div className="bg-[#1c1c1e]/40 backdrop-blur-[40px] border border-white/[0.08] rounded-full px-4 sm:px-8 py-3 sm:py-4 flex items-center justify-between shadow-2xl shadow-black/50">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-yellow-600 to-yellow-400 flex items-center justify-center shadow-inner">
               <span className="font-extrabold text-black text-[10px] tracking-tight">BD</span>
@@ -109,9 +115,10 @@ export default function LandingPage() {
             </button>
             <button
               onClick={() => window.open("/login", "_blank")}
-              className="bg-white text-black font-semibold text-xs px-5 py-2 rounded-full transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-white/10"
+              className="group relative overflow-hidden bg-white text-black font-semibold text-xs sm:text-sm px-5 sm:px-7 py-2.5 sm:py-3 rounded-full transition-all hover:scale-[1.02] hover:bg-yellow-500 hover:text-black active:scale-[0.98] shadow-lg shadow-white/10 hover:shadow-yellow-500/20"
             >
-              Command Center
+              <span className="relative z-10 transition-colors">Command Center</span>
+              <div className="absolute inset-0 h-full w-[200%] rotate-45 bg-white/40 group-hover:animate-[shine_3s_infinite_cubic-bezier(0.4,0,0.2,1)]" style={{ left: '-100%', top: '-100%' }} />
             </button>
           </div>
         </div>

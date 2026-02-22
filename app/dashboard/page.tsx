@@ -34,57 +34,59 @@ export default function Dashboard() {
     if (!user) return null;
 
     return (
-        <div className="min-h-screen bg-background-light dark:bg-background-dark text-gray-900 dark:text-white p-8 pt-0 transition-colors duration-300">
-            <div className="flex flex-col md:flex-row justify-between items-center mb-8 sticky top-16 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-xl z-40 py-6 border-b border-border-light dark:border-border-dark gap-4">
-                <div>
-                    <h1 className="text-3xl font-bold flex items-center gap-3">
-                        <div className="p-2 bg-primary/10 rounded-lg text-primary">
-                            <LayoutDashboard size={28} />
+        <div className="min-h-screen bg-[#000000] text-white p-4 sm:p-8 pt-0 transition-colors duration-300 selection:bg-white/20">
+            <div className="flex flex-col md:flex-row justify-between items-center mb-12 sticky top-6 bg-[#000000]/60 backdrop-blur-[40px] z-40 py-4 sm:py-6 border-b border-white/[0.08] gap-6 rounded-b-3xl sm:rounded-none px-4 sm:px-0">
+                <div className="w-full md:w-auto text-center md:text-left">
+                    <h1 className="text-3xl sm:text-4xl font-bold flex items-center justify-center md:justify-start gap-3 tracking-tighter">
+                        <div className="p-2 sm:p-2.5 bg-white/[0.05] border border-white/[0.1] rounded-xl text-yellow-500 shadow-inner">
+                            <LayoutDashboard size={24} className="sm:w-7 sm:h-7" />
                         </div>
-                        {user.name}&apos;s <span className="text-primary">Dashboard</span>
+                        <span className="text-yellow-500">{user.name}&apos;s</span> <span className="text-white">Command Center</span>
                     </h1>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 ml-14">
+                    <p className="text-sm text-zinc-400 mt-2 md:ml-[3.25rem] font-medium tracking-tight">
                         Manage your time, capacity, and analytics.
                     </p>
                 </div>
 
-                <TabsList>
-                    {isAdminView && (
-                        <>
-                            <Tab
-                                label="Live Capacity"
-                                value="live"
-                                isActive={activeTab === "live"}
-                                onClick={() => setActiveTab("live")}
-                                icon={Activity}
-                            />
-                            <Tab
-                                label="Capacity Planner"
-                                value="capacity"
-                                isActive={activeTab === "capacity"}
-                                onClick={() => setActiveTab("capacity")}
-                                icon={TrendingUp}
-                            />
-                        </>
-                    )}
-                    <Tab
-                        label="Time Tracker"
-                        value="time"
-                        isActive={activeTab === "time"}
-                        onClick={() => setActiveTab("time")}
-                        icon={Clock}
-                    />
-                    <Tab
-                        label="Actuals Data"
-                        value="actuals"
-                        isActive={activeTab === "actuals"}
-                        onClick={() => setActiveTab("actuals")}
-                        icon={BarChart3}
-                    />
-                </TabsList>
+                <div className="w-full md:w-auto overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
+                    <TabsList>
+                        {isAdminView && (
+                            <>
+                                <Tab
+                                    label="Live Capacity"
+                                    value="live"
+                                    isActive={activeTab === "live"}
+                                    onClick={() => setActiveTab("live")}
+                                    icon={Activity}
+                                />
+                                <Tab
+                                    label="Capacity Planner"
+                                    value="capacity"
+                                    isActive={activeTab === "capacity"}
+                                    onClick={() => setActiveTab("capacity")}
+                                    icon={TrendingUp}
+                                />
+                            </>
+                        )}
+                        <Tab
+                            label="Time Tracker"
+                            value="time"
+                            isActive={activeTab === "time"}
+                            onClick={() => setActiveTab("time")}
+                            icon={Clock}
+                        />
+                        <Tab
+                            label="Actuals Data"
+                            value="actuals"
+                            isActive={activeTab === "actuals"}
+                            onClick={() => setActiveTab("actuals")}
+                            icon={BarChart3}
+                        />
+                    </TabsList>
+                </div>
             </div>
 
-            <main className="max-w-7xl mx-auto pb-12">
+            <main className="max-w-7xl mx-auto pb-20">
                 {activeTab === "time" && <TimeTracker />}
                 {activeTab === "live" && isAdminView && <LiveCapacityDashboard />}
                 {activeTab === "capacity" && isAdminView && <HiringSimulator />}
