@@ -6,6 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import { Mail, Lock, User, Eye, EyeOff, Loader2, ChevronDown, ArrowLeft, Clock, BarChart3, Shield, Layers } from "lucide-react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { CanvasBackground } from "@/components/3d/CanvasBackground";
 
 function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
@@ -95,11 +96,16 @@ export default function LoginPage() {
             {/* ══════════════════════════════════════
           LEFT PANEL — Branding & Features
       ══════════════════════════════════════ */}
-            <div className="hidden lg:flex lg:w-[55%] relative overflow-hidden">
-                {/* Background with yellow accent */}
-                <div className="absolute inset-0 bg-[#0d0d0d]" />
-                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-yellow-500/[0.06] rounded-full blur-[150px] pointer-events-none" />
-                <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-yellow-500/[0.03] rounded-full blur-[120px] pointer-events-none" />
+            <div className="hidden lg:flex lg:w-[55%] relative overflow-hidden bg-[#0d0d0d]">
+                {/* 3D Glass Particles Background */}
+                <div className="absolute inset-0 z-0">
+                    <CanvasBackground />
+                </div>
+
+                {/* Background overlay with yellow accents to ensure text readability */}
+                <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0a] via-[#0a0a0a]/80 to-transparent pointer-events-none z-0" />
+                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-yellow-500/[0.08] rounded-full blur-[150px] pointer-events-none z-0" />
+                <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-yellow-500/[0.04] rounded-full blur-[120px] pointer-events-none z-0" />
 
                 {/* Grid pattern */}
                 <div
