@@ -6,10 +6,10 @@ import * as THREE from "three";
 import { useSceneStore } from "@/store/useSceneStore";
 import { Float } from "@react-three/drei";
 
-// Number of instances for our swarm
-const COUNT = 1200;
+// Number of instances for our glass panels
+const COUNT = 40;
 
-function ParticleSwarm() {
+function GlassPanels() {
     const meshRef = useRef<THREE.InstancedMesh>(null);
     const { viewport } = useThree();
 
@@ -27,16 +27,17 @@ function ParticleSwarm() {
             const z = r * Math.cos(phi) - 5; // pushed back slightly
 
             // Individual physics characteristics
-            const speedX = Math.random() * 0.2 + 0.1;
-            const speedY = Math.random() * 0.2 + 0.1;
-            const speedZ = Math.random() * 0.2 + 0.1;
+            const speedX = Math.random() * 0.1 + 0.05;
+            const speedY = Math.random() * 0.1 + 0.05;
+            const speedZ = Math.random() * 0.1 + 0.05;
 
             // Individual rotation speeds
-            const rotX = Math.random() * 0.02 - 0.01;
-            const rotY = Math.random() * 0.02 - 0.01;
-            const rotZ = Math.random() * 0.02 - 0.01;
+            const rotX = Math.random() * 0.005 - 0.0025;
+            const rotY = Math.random() * 0.005 - 0.0025;
+            const rotZ = Math.random() * 0.005 - 0.0025;
 
-            const scale = Math.random() * 0.15 + 0.05;
+            // Scale for the glass panels
+            const scale = Math.random() * 2 + 1.5;
 
             temp.push({
                 x, y, z,
@@ -80,17 +81,18 @@ function ParticleSwarm() {
 
     return (
         <instancedMesh ref={meshRef} args={[undefined, undefined, COUNT]}>
-            {/* Crystal / Glass visual */}
-            <icosahedronGeometry args={[1, 1]} />
+            {/* Glass Panel Visual */}
+            <boxGeometry args={[1.5, 1, 0.02]} />
             <meshPhysicalMaterial
                 color="#ffffff"
-                transmission={0.9}
+                transmission={0.95}
                 opacity={1}
-                metalness={0.1}
-                roughness={0.1}
+                metalness={0.2}
+                roughness={0.05}
                 ior={1.5}
                 thickness={0.5}
                 clearcoat={1}
+                clearcoatRoughness={0.1}
             />
         </instancedMesh>
     );
@@ -147,8 +149,8 @@ export function CanvasBackground() {
                 <directionalLight position={[-10, -10, -5]} intensity={0.5} color="#cbd5e1" />
 
                 <Rig />
-                <Float speed={2} rotationIntensity={0.5} floatIntensity={0.5}>
-                    <ParticleSwarm />
+                <Float speed={1.5} rotationIntensity={0.2} floatIntensity={0.5}>
+                    <GlassPanels />
                 </Float>
             </Canvas>
         </div>

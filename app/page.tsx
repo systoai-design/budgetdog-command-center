@@ -66,7 +66,7 @@ export default function LandingPage() {
 
   return (
     <div
-      className="min-h-[200vh] bg-[#000000] text-white selection:bg-white/20 overflow-x-hidden relative"
+      className="bg-[#000000] text-white selection:bg-white/20 overflow-x-hidden relative"
       onPointerMove={handlePointerMove}
     >
       {/* ── Background 3D Layer ── */}
@@ -75,7 +75,7 @@ export default function LandingPage() {
       {/* ── Keyframe animations ── */}
       <style jsx global>{`
         @keyframes fadeInUpFloat {
-          0% { opacity: 0; transform: translateY(40px) scale(0.98); filter: blur(10px); }
+          0% { opacity: 0; transform: translateY(60px) scale(0.95); filter: blur(20px); }
           100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0px); }
         }
         .animate-apple-entrance {
@@ -95,10 +95,10 @@ export default function LandingPage() {
       <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-3xl animate-apple-entrance">
         <div className="bg-[#1c1c1e]/40 backdrop-blur-[40px] border border-white/[0.08] rounded-full px-6 py-3 flex items-center justify-between shadow-2xl shadow-black/50">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-zinc-800 to-zinc-600 flex items-center justify-center shadow-inner">
-              <span className="font-extrabold text-white text-[10px] tracking-tight">BD</span>
+            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-yellow-600 to-yellow-400 flex items-center justify-center shadow-inner">
+              <span className="font-extrabold text-black text-[10px] tracking-tight">BD</span>
             </div>
-            <span className="font-semibold text-white/90 text-sm tracking-tight">budgetdog</span>
+            <span className="font-semibold text-yellow-500 text-sm tracking-tight">budgetdog</span>
           </div>
           <div className="flex items-center gap-6">
             <button
@@ -130,13 +130,13 @@ export default function LandingPage() {
           </div>
 
           {/* Headline */}
-          <h1 className="animate-apple-entrance delay-100 text-[clamp(3.5rem,8vw,8rem)] font-bold leading-[0.9] tracking-tighter mb-8 text-transparent bg-clip-text bg-gradient-to-b from-white via-white to-white/40">
+          <h1 className="animate-apple-entrance delay-100 text-[clamp(3.5rem,8vw,8rem)] font-bold leading-[1.05] tracking-tighter mb-8 text-transparent bg-clip-text bg-gradient-to-b from-white via-white to-white/50">
             Pro Tools.
             <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-zinc-400 to-zinc-600">Pure Focus.</span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600">Pure Focus.</span>
           </h1>
 
-          <p className="animate-apple-entrance delay-200 text-lg sm:text-2xl text-zinc-400/80 max-w-2xl mx-auto font-medium tracking-tight mb-12 leading-snug">
+          <p className="animate-apple-entrance delay-200 text-lg sm:text-2xl text-zinc-400 max-w-2xl mx-auto font-medium tracking-tight mb-12 leading-relaxed">
             One platform to command the entire tax operation. Capacity mapping, frictionless time tracking, and instant role switching.
           </p>
 
@@ -200,18 +200,18 @@ export default function LandingPage() {
 
           </div>
         </div>
-      </section>
+      </section >
 
       {/* ═══════════════════════════════════════════
           CTA & FOOTER — Extreme Minimalism
       ═══════════════════════════════════════════ */}
-      <section className="relative py-40 z-10 px-6 lg:px-10 border-t border-white/[0.05]">
+      < section className="relative py-40 z-10 px-6 lg:px-10 border-t border-white/[0.05]" >
         <div className="max-w-4xl mx-auto text-center">
 
-          <h2 className="text-[clamp(3rem,8vw,7rem)] font-bold tracking-tighter leading-[0.9] mb-12 text-transparent bg-clip-text bg-gradient-to-b from-white to-zinc-600">
-            Budgetdog.
+          <h2 className="animate-apple-entrance text-[clamp(3rem,8vw,7rem)] font-bold tracking-tighter leading-[1.05] mb-12">
+            <span className="text-yellow-500">Budgetdog.</span>
             <br />
-            Operating System.
+            <span className="text-white">Operating System.</span>
           </h2>
 
           <button
@@ -223,13 +223,13 @@ export default function LandingPage() {
           </button>
 
         </div>
-      </section>
+      </section >
 
       <footer className="relative z-10 py-8 text-center border-t border-white/[0.02]">
         <p className="text-xs font-semibold tracking-widest text-zinc-600 uppercase">
           Internal Operations Hub &copy; {new Date().getFullYear()}
         </p>
       </footer>
-    </div>
+    </div >
   );
 }
