@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { Mail, Lock, User, Eye, EyeOff, Loader2, ChevronDown, ArrowLeft, Clock, BarChart3, Shield, Layers } from "lucide-react";
+import Image from "next/image";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { CanvasBackground } from "@/components/3d/CanvasBackground";
@@ -128,8 +129,8 @@ export default function LoginPage() {
                         </button>
 
                         <div className="flex items-center gap-3 mb-12">
-                            <div className="w-12 h-12 bg-yellow-500 rounded-2xl flex items-center justify-center font-black text-black text-lg shadow-lg shadow-yellow-500/20">
-                                BD
+                            <div className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg shadow-yellow-500/20 overflow-hidden shrink-0">
+                                <Image src="/logo1.png" alt="Budgetdog Logo" width={48} height={48} className="object-cover w-full h-full" />
                             </div>
                             <div>
                                 <div className="font-bold text-xl text-white tracking-tight">BudgetDog</div>

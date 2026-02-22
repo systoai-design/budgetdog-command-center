@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useEffect, useRef } from "react";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
+import Image from "next/image";
 
 import { CanvasBackground } from "@/components/3d/CanvasBackground";
 import { useSceneStore } from "@/store/useSceneStore";
@@ -101,8 +102,8 @@ export default function LandingPage() {
       <nav className="fixed top-4 sm:top-6 left-1/2 -translate-x-1/2 z-50 w-[95%] sm:w-[90%] max-w-5xl animate-apple-entrance">
         <div className="bg-[#1c1c1e]/40 backdrop-blur-[40px] border border-white/[0.08] rounded-full px-4 sm:px-8 py-3 sm:py-4 flex items-center justify-between shadow-2xl shadow-black/50">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-yellow-600 to-yellow-400 flex items-center justify-center shadow-inner">
-              <span className="font-extrabold text-black text-[10px] tracking-tight">BD</span>
+            <div className="w-8 h-8 rounded-full flex items-center justify-center shadow-inner overflow-hidden shrink-0">
+              <Image src="/logo1.png" alt="Budgetdog Logo" width={32} height={32} className="object-cover w-full h-full" />
             </div>
             <span className="font-semibold text-yellow-500 text-sm tracking-tight">budgetdog</span>
           </div>
@@ -215,9 +216,10 @@ export default function LandingPage() {
       < section className="relative py-40 z-10 px-6 lg:px-10 border-t border-white/[0.05]" >
         <div className="max-w-4xl mx-auto text-center">
 
-          <h2 className="animate-apple-entrance text-[clamp(3rem,8vw,7rem)] font-bold tracking-tighter leading-[1.05] mb-12">
-            <span className="text-yellow-500">Budgetdog.</span>
-            <br />
+          <h2 className="animate-apple-entrance text-[clamp(3rem,8vw,7rem)] font-bold tracking-tighter leading-[1.05] mb-12 flex flex-col items-center">
+            <div className="mb-4 sm:mb-6 w-48 sm:w-64 lg:w-80">
+              <Image src="/logo2.png" alt="Budgetdog" width={400} height={150} className="w-full h-auto object-contain" />
+            </div>
             <span className="text-white">Operating System.</span>
           </h2>
 
