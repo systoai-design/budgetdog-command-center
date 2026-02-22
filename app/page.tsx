@@ -5,37 +5,28 @@ import { useAuth } from "@/context/AuthContext";
 import { useEffect, useRef } from "react";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import Image from "next/image";
+import { motion } from "framer-motion";
 
 import { CanvasBackground } from "@/components/3d/CanvasBackground";
 import { useSceneStore } from "@/store/useSceneStore";
 
 /* ───────────────────────────────────────────────
-   GLASS CARD COMPONENT (Ultra-Premium Apple Style)
+   FADE IN VIEW WRAPPER
    ─────────────────────────────────────────────── */
-function GlassCard({
-  children,
-  className = "",
-  hover = true,
-}: {
-  children: React.ReactNode;
-  className?: string;
-  hover?: boolean;
-}) {
+function FadeInView({ children, delay = 0, className = "" }: { children: React.ReactNode, delay?: number, className?: string }) {
   return (
-    <div
-      className={`
-        bg-white/[0.01] backdrop-blur-3xl border border-white/[0.04]
-        rounded-[2rem] shadow-2xl shadow-black/40 overflow-hidden
-        ${hover ? "hover:bg-white/[0.03] hover:border-white/[0.08] transition-all duration-700 ease-out" : ""}
-        ${className}
-      `}
+    <motion.div
+      initial={{ opacity: 0, y: 30, filter: "blur(8px)" }}
+      whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+      viewport={{ once: true, margin: "-100px" }}
+      transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay }}
+      className={className}
     >
-      {/* Subtle top inner highlight for glass depth */}
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
       {children}
-    </div>
+    </motion.div>
   );
 }
+
 
 /* ═══════════════════════════════════════════════════
    LANDING PAGE
@@ -161,54 +152,173 @@ export default function LandingPage() {
       </section>
 
       {/* ═══════════════════════════════════════════
-          FEATURES GRID — Deep Glassmorphism
+          SHOWCASE 1: TIME TRACKER
       ═══════════════════════════════════════════ */}
-      <section className="relative py-32 z-10 px-6 lg:px-10">
+      <section className="relative py-32 z-10 px-6 lg:px-10 overflow-hidden">
         <div className="max-w-7xl mx-auto">
-
-          <div className="text-center mb-24 animate-apple-entrance delay-400">
-            <h2 className="text-[clamp(2.5rem,5vw,4.5rem)] font-bold tracking-tighter leading-tight bg-clip-text text-transparent bg-gradient-to-br from-white to-zinc-500">
-              Engineered for precision.
-              <br />
-              Designed for speed.
-            </h2>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-6 lg:gap-8">
-
-            {/* Large Feature Card 1 */}
-            <GlassCard className="p-10 md:p-14 md:col-span-2 group">
-              <div className="max-w-xl relative z-20">
+          <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-24">
+            <div className="flex-1 lg:max-w-xl">
+              <FadeInView>
                 <div className="w-12 h-12 rounded-2xl bg-white/[0.05] border border-white/[0.1] flex items-center justify-center mb-8 backdrop-blur-md">
-                  <span className="text-white">⌘</span>
+                  <span className="text-white text-xl">⌘</span>
                 </div>
-                <h3 className="text-3xl font-bold tracking-tighter mb-4 text-white">Unified Command</h3>
-                <p className="text-zinc-400 text-lg leading-relaxed font-medium">
-                  Instantly toggle between Tax Planning and Tax Preparation divisions. Automatically pivot charge codes, capacity models, and reporting structures without losing context.
+                <h2 className="text-[clamp(2.5rem,5vw,4.5rem)] font-bold tracking-tighter leading-tight bg-clip-text text-transparent bg-gradient-to-br from-white to-zinc-500 mb-6">
+                  Frictionless logging.
+                </h2>
+                <p className="text-zinc-400 text-lg md:text-xl leading-relaxed font-medium">
+                  Role-aware time entry interfaces. Advisors see kickoff calls and projections; Preparers see organizers and e-filing. Clean, direct, and zero clutter.
                 </p>
-              </div>
-              {/* Abstract visual decor within card */}
-              <div className="absolute right-0 bottom-0 w-[60%] h-[120%] bg-gradient-to-tl from-zinc-800/30 to-transparent blur-[80px] -z-10 group-hover:from-zinc-700/40 transition-all duration-1000" />
-            </GlassCard>
-
-            {/* Medium Feature Cards */}
-            <GlassCard className="p-10 relative">
-              <h3 className="text-2xl font-bold tracking-tighter mb-4 text-white">Frictionless Tracking</h3>
-              <p className="text-zinc-400 text-base leading-relaxed font-medium">
-                Role-aware time entry interfaces. Advisors see kickoff calls and projections; Preparers see organizers and e-filing. Clean, direct, and zero clutter.
-              </p>
-            </GlassCard>
-
-            <GlassCard className="p-10 relative">
-              <h3 className="text-2xl font-bold tracking-tighter mb-4 text-white">Capacity Simulator</h3>
-              <p className="text-zinc-400 text-base leading-relaxed font-medium">
-                Model team output limits instantly via local-storage cached slider arrays. Set arbitrary assumptions and view immediate physical limits.
-              </p>
-            </GlassCard>
-
+              </FadeInView>
+            </div>
+            <div className="flex-1 w-full" style={{ perspective: "1000px" }}>
+              <FadeInView delay={0.2}>
+                <motion.div whileHover={{ scale: 1.02, rotateY: -5, rotateX: 5 }} transition={{ type: "spring", stiffness: 400, damping: 30 }} className="p-1 min-h-[400px] bg-gradient-to-b from-white/[0.08] to-transparent rounded-3xl relative" style={{ transformStyle: "preserve-3d" }}>
+                  <div className="absolute inset-0 bg-[#000000] rounded-3xl -z-10" />
+                  <div className="h-full w-full bg-white/[0.02] backdrop-blur-3xl rounded-[23px] border border-white/[0.05] p-6 shadow-2xl overflow-hidden flex flex-col gap-3">
+                    {/* Fake header */}
+                    <div className="flex justify-between items-center mb-4 border-b border-white/[0.05] pb-4">
+                      <div className="w-32 h-6 bg-white/[0.05] rounded-md" />
+                      <div className="w-24 h-8 bg-yellow-500/20 border border-yellow-500/30 rounded-full" />
+                    </div>
+                    {/* Fake rows */}
+                    {[...Array(5)].map((_, i) => (
+                      <div key={i} className="flex justify-between items-center p-3 rounded-xl bg-white/[0.02] border border-white/[0.02]">
+                        <div className="flex flex-col gap-2">
+                          <div className="w-48 h-4 bg-white/[0.1] rounded" />
+                          <div className="w-24 h-3 bg-white/[0.05] rounded" />
+                        </div>
+                        <div className="flex gap-2">
+                          <div className="w-12 h-8 bg-black/40 rounded-lg" />
+                          <div className="w-12 h-8 bg-black/40 rounded-lg" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              </FadeInView>
+            </div>
           </div>
         </div>
-      </section >
+      </section>
+
+      {/* ═══════════════════════════════════════════
+          SHOWCASE 2: CAPACITY PLANNER
+      ═══════════════════════════════════════════ */}
+      <section className="relative py-32 z-10 px-6 lg:px-10 overflow-hidden">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col lg:flex-row-reverse items-center gap-16 lg:gap-24">
+            <div className="flex-1 lg:max-w-xl">
+              <FadeInView>
+                <div className="w-12 h-12 rounded-2xl bg-white/[0.05] border border-white/[0.1] flex items-center justify-center mb-8 backdrop-blur-md">
+                  <span className="text-white text-xl">⚡</span>
+                </div>
+                <h2 className="text-[clamp(2.5rem,5vw,4.5rem)] font-bold tracking-tighter leading-tight bg-clip-text text-transparent bg-gradient-to-br from-white to-zinc-500 mb-6">
+                  Know your limits.<br />Before they break.
+                </h2>
+                <p className="text-zinc-400 text-lg md:text-xl leading-relaxed font-medium">
+                  Model team output limits instantly via real-time slider arrays. Set arbitrary assumptions and view immediate physical limits.
+                </p>
+              </FadeInView>
+            </div>
+            <div className="flex-1 w-full" style={{ perspective: "1000px" }}>
+              <FadeInView delay={0.2}>
+                <motion.div whileHover={{ scale: 1.02, rotateY: 5, rotateX: 5 }} transition={{ type: "spring", stiffness: 400, damping: 30 }} className="p-1 min-h-[400px] bg-gradient-to-b from-red-500/[0.1] to-transparent rounded-3xl relative" style={{ transformStyle: "preserve-3d" }}>
+                  <div className="absolute inset-0 bg-[#000000] rounded-3xl -z-10" />
+                  <div className="h-full w-full bg-white/[0.02] backdrop-blur-3xl rounded-[23px] border border-red-500/[0.2] p-6 shadow-2xl flex flex-col gap-6">
+                    {/* Red warning banner */}
+                    <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3">
+                      <div className="w-1.5 h-10 bg-red-500 rounded-full" />
+                      <div>
+                        <div className="text-red-500 font-bold text-sm">CRITICAL: OVER CAPACITY</div>
+                        <div className="text-red-500/70 text-xs mt-1">Firm is over target capacity. The Advisors team is the bottleneck.</div>
+                      </div>
+                    </div>
+                    <div className="flex gap-6">
+                      {/* Sliders fake */}
+                      <div className="w-1/3 flex flex-col gap-4">
+                        {[...Array(4)].map((_, i) => (
+                          <div key={i}>
+                            <div className="flex justify-between mb-2">
+                              <div className="w-20 h-3 bg-white/[0.1] rounded" />
+                              <div className="w-8 h-3 bg-yellow-500/50 rounded" />
+                            </div>
+                            <div className="h-2 w-full bg-white/[0.05] rounded-full overflow-hidden">
+                              <div className="h-full bg-yellow-500" style={{ width: `${Math.random() * 60 + 20}%` }} />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      {/* Data blocks */}
+                      <div className="w-2/3 grid grid-cols-2 gap-4">
+                        {[...Array(4)].map((_, i) => (
+                          <div key={i} className="bg-white/[0.03] border border-white/[0.05] rounded-xl p-4 flex flex-col items-center justify-center">
+                            <div className="w-8 h-8 rounded-full bg-white/[0.05] mb-3" />
+                            <div className="w-16 h-6 bg-white/[0.1] rounded mb-1" />
+                            <div className="w-24 h-3 bg-white/[0.05] rounded" />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              </FadeInView>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════
+          SHOWCASE 3: ACTUALS ANALYSIS
+      ═══════════════════════════════════════════ */}
+      <section className="relative py-32 z-10 px-6 lg:px-10 overflow-hidden">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-24">
+            <div className="flex-1 lg:max-w-xl">
+              <FadeInView>
+                <div className="w-12 h-12 rounded-2xl bg-white/[0.05] border border-white/[0.1] flex items-center justify-center mb-8 backdrop-blur-md">
+                  <span className="text-white text-xl">◓</span>
+                </div>
+                <h2 className="text-[clamp(2.5rem,5vw,4.5rem)] font-bold tracking-tighter leading-tight bg-clip-text text-transparent bg-gradient-to-br from-white to-zinc-500 mb-6">
+                  Metrics that matter.
+                </h2>
+                <p className="text-zinc-400 text-lg md:text-xl leading-relaxed font-medium">
+                  Instantly toggle between departments. Automatically pivot charge codes, capacity models, and reporting structures.
+                </p>
+              </FadeInView>
+            </div>
+            <div className="flex-1 w-full" style={{ perspective: "1000px" }}>
+              <FadeInView delay={0.2}>
+                <motion.div whileHover={{ scale: 1.02, rotateY: -5, rotateX: -5 }} transition={{ type: "spring", stiffness: 400, damping: 30 }} className="p-1 min-h-[400px] bg-gradient-to-b from-blue-500/[0.1] to-transparent rounded-3xl relative" style={{ transformStyle: "preserve-3d" }}>
+                  <div className="absolute inset-0 bg-[#000000] rounded-3xl -z-10" />
+                  <div className="h-full w-full bg-white/[0.02] backdrop-blur-3xl rounded-[23px] border border-blue-500/[0.1] p-6 shadow-2xl flex flex-col gap-6">
+                    <div className="flex gap-4 mb-2">
+                      <div className="px-4 py-2 bg-white/[0.1] rounded-lg w-24 h-8" />
+                      <div className="px-4 py-2 bg-white/[0.05] rounded-lg w-24 h-8" />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 flex-1">
+                      <div className="bg-white/[0.02] border border-white/[0.05] rounded-xl p-4 flex flex-col justify-end gap-2 relative overflow-hidden">
+                        {/* Fake bar chart */}
+                        <div className="absolute top-4 left-4 font-bold text-white/50 text-sm">Weekly Trend</div>
+                        <div className="flex items-end justify-around h-32 mt-8 w-full">
+                          <div className="w-8 bg-blue-500/80 rounded-t-sm h-[40%]" />
+                          <div className="w-8 bg-blue-500/80 rounded-t-sm h-[60%]" />
+                          <div className="w-8 bg-yellow-500/80 rounded-t-sm h-[90%]" />
+                        </div>
+                      </div>
+                      <div className="bg-white/[0.02] border border-white/[0.05] rounded-xl p-4 flex items-center justify-center relative">
+                        {/* Fake pie chart (CSS conic gradient) */}
+                        <div className="absolute top-4 left-4 font-bold text-white/50 text-sm">Role Dist.</div>
+                        <div className="w-32 h-32 rounded-full mt-4" style={{ background: "conic-gradient(#eab308 0% 40%, #3b82f6 40% 85%, #a855f7 85% 100%)", maskImage: "radial-gradient(transparent 55%, black 56%)", WebkitMaskImage: "radial-gradient(transparent 55%, black 56%)" }} />
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              </FadeInView>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* ═══════════════════════════════════════════
           CTA & FOOTER — Extreme Minimalism
