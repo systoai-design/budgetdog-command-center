@@ -289,56 +289,18 @@ export default function LandingPage() {
       </section>
 
       {/* ═══════════════════════════════════════════
-          INTEGRATION MARQUEE
+          BENTO GRID O.S. MODULES
       ═══════════════════════════════════════════ */}
-      <section className="relative py-20 z-10 border-y border-white/[0.05] bg-black/50 backdrop-blur-md overflow-hidden flex flex-col items-center">
-        <p className="text-zinc-500 font-semibold text-sm tracking-widest uppercase mb-10">Trusted Architecture</p>
+      <section className="relative py-24 z-10 px-6 lg:px-10 overflow-hidden border-t border-white/[0.05]">
+        <div className="max-w-6xl mx-auto flex flex-col items-center">
 
-        {/* Marquee Wrapper */}
-        <div className="w-full flex inset-x-0 relative overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
-          <div className="flex w-fit whitespace-nowrap animate-marquee">
-            {/* Duplicate array for infinite scroll effect */}
-            {[...Array(2)].map((_, j) => (
-              <div key={j} className="flex gap-12 sm:gap-24 px-6 sm:px-12 items-center justify-center min-w-full justify-around">
-                <div className="flex items-center gap-3 text-zinc-400 opacity-60 grayscale hover:grayscale-0 hover:opacity-100 transition-all cursor-default">
-                  <Database size={28} />
-                  <span className="font-bold tracking-tight text-xl">Supabase</span>
-                </div>
-                <div className="flex items-center gap-3 text-zinc-400 opacity-60 grayscale hover:grayscale-0 hover:opacity-100 transition-all cursor-default">
-                  <Cloud size={28} />
-                  <span className="font-bold tracking-tight text-xl">Vercel</span>
-                </div>
-                <div className="flex items-center gap-3 text-zinc-400 opacity-60 grayscale hover:grayscale-0 hover:opacity-100 transition-all cursor-default">
-                  <Network size={28} />
-                  <span className="font-bold tracking-tight text-xl">TaxDome</span>
-                </div>
-                <div className="flex items-center gap-3 text-zinc-400 opacity-60 grayscale hover:grayscale-0 hover:opacity-100 transition-all cursor-default">
-                  <Activity size={28} />
-                  <span className="font-bold tracking-tight text-xl">QuickBooks</span>
-                </div>
-                <div className="flex items-center gap-3 text-zinc-400 opacity-60 grayscale hover:grayscale-0 hover:opacity-100 transition-all cursor-default">
-                  <Users size={28} />
-                  <span className="font-bold tracking-tight text-xl">Gusto</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════
-          BENTO GRID FEATURES
-      ═══════════════════════════════════════════ */}
-      <section className="relative py-32 z-10 px-6 lg:px-10 overflow-hidden">
-        <div className="max-w-6xl mx-auto">
-
-          <div className="text-center mb-20 animate-apple-entrance">
+          <div className="text-center mb-16 animate-apple-entrance flex flex-col items-center">
             <h2 className="text-4xl md:text-5xl font-bold tracking-tighter text-white mb-6 drop-shadow-lg">
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-yellow-600">Sync your firm's data</span>
-              <br />in unparalleled fidelity.
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-yellow-600">Command Center</span>
+              <br />Modules.
             </h2>
             <p className="text-zinc-400 text-lg max-w-2xl mx-auto">
-              Escape the chaos of fractured spreadsheets. One command center to rule them all.
+              Live application interfaces. Secure internal access only.
             </p>
           </div>
 
@@ -346,77 +308,71 @@ export default function LandingPage() {
 
             {/* Bento 1: Actuals Analytics */}
             <FadeInView delay={0.1}>
-              <div className="group rounded-3xl border border-white/[0.08] bg-black/40 backdrop-blur-xl p-8 hover:bg-white/[0.02] transition-colors h-full flex flex-col justify-between overflow-hidden relative">
-                <div className="relative z-10">
+              <div className="group rounded-3xl border border-white/[0.08] bg-black/40 backdrop-blur-xl p-8 hover:bg-white/[0.02] transition-colors h-full flex flex-col overflow-hidden relative">
+                <div className="relative z-10 mb-8">
                   <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center mb-6">
                     <Activity className="text-blue-500" />
                   </div>
-                  <h3 className="text-2xl font-bold tracking-tight text-white mb-3">AI-Powered Actuals</h3>
-                  <p className="text-zinc-400 font-medium">Instantly pivot between tax planning and preparation divisions with live margin analysis.</p>
+                  <h3 className="text-2xl font-bold tracking-tight text-white mb-2">Live Reporting</h3>
+                  <p className="text-zinc-400 font-medium">Instantly pivot between internal divisions with real-time analytics.</p>
                 </div>
 
-                {/* Internal Graphic */}
-                <div className="mt-12 h-40 w-full relative border border-white/[0.05] rounded-xl bg-white/[0.01] overflow-hidden group-hover:bg-white/[0.03] transition-colors">
-                  <div className="absolute inset-0 bg-gradient-to-t from-blue-500/10 to-transparent"></div>
-                  <div className="absolute bottom-0 left-0 right-0 flex items-end justify-around h-full p-4 gap-2">
-                    <motion.div initial={{ height: "40%" }} whileInView={{ height: "60%" }} viewport={{ once: true }} className="w-full bg-blue-500/50 rounded-t-sm animate-pulse"></motion.div>
-                    <motion.div initial={{ height: "60%" }} whileInView={{ height: "80%" }} viewport={{ once: true }} className="w-full bg-blue-500/60 rounded-t-sm"></motion.div>
-                    <motion.div initial={{ height: "30%" }} whileInView={{ height: "95%" }} viewport={{ once: true }} className="w-full bg-yellow-500/80 rounded-t-sm"></motion.div>
-                  </div>
+                <div className="mt-auto relative w-full pt-[50%] rounded-t-xl border-x border-t border-white/[0.05] bg-white/[0.01] overflow-hidden translate-y-4 group-hover:translate-y-2 transition-transform duration-500">
+                  <Image src="/bento-actuals.png" alt="Actuals Analytics" fill className="object-cover object-top opacity-80 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/80 to-transparent pointer-events-none"></div>
                 </div>
               </div>
             </FadeInView>
 
             {/* Bento 2: Capacity Planner */}
             <FadeInView delay={0.2}>
-              <div className="group rounded-3xl border border-white/[0.08] bg-black/40 backdrop-blur-xl p-8 hover:bg-white/[0.02] transition-colors h-full flex flex-col justify-between overflow-hidden relative">
-                <div className="relative z-10">
+              <div className="group rounded-3xl border border-white/[0.08] bg-black/40 backdrop-blur-xl p-8 hover:bg-white/[0.02] transition-colors h-full flex flex-col overflow-hidden relative">
+                <div className="relative z-10 mb-8">
                   <div className="w-12 h-12 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-6">
                     <Zap className="text-red-500" />
                   </div>
-                  <h3 className="text-2xl font-bold tracking-tight text-white mb-3">Limit Modeling</h3>
-                  <p className="text-zinc-400 font-medium">Drag sliders to forecast maximum capacity before your team breaks. Eliminate assumptions.</p>
+                  <h3 className="text-2xl font-bold tracking-tight text-white mb-2">Capacity Simulator</h3>
+                  <p className="text-zinc-400 font-medium">Internal playground for modeling theoretical hires and constraints.</p>
                 </div>
 
-                {/* Internal Graphic */}
-                <div className="mt-12 h-40 w-full relative border border-white/[0.05] rounded-xl bg-white/[0.01] overflow-hidden p-6 flex flex-col gap-4">
-                  <div className="flex items-center gap-4 group-hover:translate-x-2 transition-transform">
-                    <div className="w-8 h-8 rounded bg-white/10 shrink-0"></div>
-                    <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden flex"><div className="w-4/5 h-full bg-yellow-500"></div></div>
-                  </div>
-                  <div className="flex items-center gap-4 group-hover:-translate-x-2 transition-transform">
-                    <div className="w-8 h-8 rounded bg-white/10 shrink-0"></div>
-                    <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden flex"><div className="w-[95%] h-full bg-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)]"></div></div>
-                  </div>
+                <div className="mt-auto relative w-full pt-[50%] rounded-t-xl border-x border-t border-white/[0.05] bg-white/[0.01] overflow-hidden translate-y-4 group-hover:translate-y-2 transition-transform duration-500">
+                  <Image src="/bento-capacity.png" alt="Capacity Planner Simulator" fill className="object-cover object-top opacity-80 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/80 to-transparent pointer-events-none"></div>
                 </div>
               </div>
             </FadeInView>
 
             {/* Bento 3: Time Tracking */}
             <FadeInView delay={0.3}>
-              <div className="group rounded-3xl border border-white/[0.08] bg-black/40 backdrop-blur-xl p-8 hover:bg-white/[0.02] transition-colors h-full flex flex-col justify-between overflow-hidden relative">
-                <div className="relative z-10">
+              <div className="group rounded-3xl border border-white/[0.08] bg-black/40 backdrop-blur-xl p-8 hover:bg-white/[0.02] transition-colors h-full flex flex-col overflow-hidden relative">
+                <div className="relative z-10 mb-8">
                   <div className="w-12 h-12 rounded-xl bg-green-500/10 border border-green-500/20 flex items-center justify-center mb-6">
                     <HardDrive className="text-green-500" />
                   </div>
-                  <h3 className="text-2xl font-bold tracking-tight text-white mb-3">Frictionless Logging</h3>
-                  <p className="text-zinc-400 font-medium">Role-aware time entries. Stop forcing preparers to sift through advisor charge codes.</p>
+                  <h3 className="text-2xl font-bold tracking-tight text-white mb-2">Time Tracking</h3>
+                  <p className="text-zinc-400 font-medium">Role-aware entry logs strictly mapped by operating division.</p>
                 </div>
-                <div className="absolute -right-10 -bottom-10 w-64 h-64 bg-green-500/10 blur-[80px] rounded-full pointer-events-none group-hover:bg-green-500/20 transition-colors"></div>
+
+                <div className="mt-auto relative w-full pt-[50%] rounded-xl border border-white/[0.05] bg-white/[0.01] overflow-hidden group-hover:scale-[1.02] transition-transform duration-500">
+                  <Image src="/bento-time.png" alt="Time Tracking Log" fill className="object-cover object-top opacity-80 group-hover:opacity-100 transition-opacity duration-500" />
+                </div>
               </div>
             </FadeInView>
 
-            {/* Bento 4: Architecture */}
+            {/* Bento 4: Live Capacity */}
             <FadeInView delay={0.4}>
-              <div className="group rounded-3xl border border-white/[0.08] bg-black/40 backdrop-blur-xl p-8 hover:bg-white/[0.02] transition-colors h-full flex flex-col justify-between overflow-hidden relative">
-                <div className="relative z-10">
+              <div className="group rounded-3xl border border-white/[0.08] bg-black/40 backdrop-blur-xl p-8 hover:bg-white/[0.02] transition-colors h-full flex flex-col overflow-hidden relative">
+                <div className="relative z-10 mb-8">
                   <div className="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mb-6">
                     <Shield className="text-purple-500" />
                   </div>
-                  <h3 className="text-2xl font-bold tracking-tight text-white mb-3">Enterprise Grade</h3>
-                  <p className="text-zinc-400 font-medium">Edge-deployed Node environments with granular PostgreSQL Row-Level Security.</p>
+                  <h3 className="text-2xl font-bold tracking-tight text-white mb-2">Live Capacity</h3>
+                  <p className="text-zinc-400 font-medium">True limit modeling calculated via verified 30-day trailing averages.</p>
                 </div>
-                <div className="absolute -right-10 -bottom-10 w-64 h-64 bg-purple-500/10 blur-[80px] rounded-full pointer-events-none group-hover:bg-purple-500/20 transition-colors"></div>
+
+                <div className="mt-auto relative w-full pt-[50%] rounded-xl border border-white/[0.05] bg-white/[0.01] overflow-hidden group-hover:scale-[1.02] transition-transform duration-500">
+                  <Image src="/bento-live.png" alt="Live Team Capacity" fill className="object-cover object-top opacity-80 group-hover:opacity-100 transition-opacity duration-500" />
+                </div>
               </div>
             </FadeInView>
 
