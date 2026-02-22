@@ -157,7 +157,7 @@ export default function ActualsDashboard() {
     // Process Data: Role Breakdown
     const roleData = uniqueCategories.map(cat => ({
         name: formatRoleName(cat),
-        value: filteredEntries.filter(e => e.category === cat).reduce((acc, curr) => acc + curr.duration, 0),
+        value: filteredEntries.filter(e => e.category === cat).reduce((acc, curr) => acc + (curr.duration / 60), 0),
         color: ROLE_COLORS[cat] || "#8884d8"
     })).filter(d => d.value > 0);
 
