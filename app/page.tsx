@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -24,6 +24,44 @@ function FadeInView({ children, delay = 0, className = "" }: { children: React.R
     >
       {children}
     </motion.div>
+  );
+}
+
+/* ───────────────────────────────────────────────
+   MAGNETIC BUTTON COMPONENT
+   ─────────────────────────────────────────────── */
+function MagneticButton({ children, className = "", onClick }: { children: React.ReactNode, className?: string, onClick?: () => void }) {
+  const ref = useRef<HTMLButtonElement>(null);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+
+  const handleMouse = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const { clientX, clientY } = e;
+    const { height, width, left, top } = ref.current!.getBoundingClientRect();
+    const middleX = clientX - (left + width / 2);
+    const middleY = clientY - (top + height / 2);
+    setPosition({ x: middleX * 0.25, y: middleY * 0.25 });
+  };
+
+  const reset = () => {
+    setPosition({ x: 0, y: 0 });
+  };
+
+  const { x, y } = position;
+
+  return (
+    <motion.button
+      ref={ref}
+      onMouseMove={handleMouse}
+      onMouseLeave={reset}
+      onClick={onClick}
+      animate={{ x, y }}
+      transition={{ type: "spring", stiffness: 150, damping: 15, mass: 0.1 }}
+      className={className}
+    >
+      <motion.div animate={{ x: x * 0.4, y: y * 0.4 }} transition={{ type: "spring", stiffness: 150, damping: 15, mass: 0.1 }} className="flex items-center justify-center gap-2.5 w-full h-full">
+        {children}
+      </motion.div>
+    </motion.button>
   );
 }
 
@@ -129,25 +167,48 @@ export default function LandingPage() {
           </div>
 
           {/* Headline */}
-          <h1 className="animate-apple-entrance delay-100 text-[clamp(3.5rem,8vw,8rem)] font-bold leading-[1.05] tracking-tighter mb-8 text-transparent bg-clip-text bg-gradient-to-b from-white via-white to-white/50">
-            Pro Tools.
-            <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600">Pure Focus.</span>
+          <h1 className="text-[clamp(3.5rem,8vw,8rem)] font-bold leading-[1.05] tracking-tighter mb-8 flex flex-col items-center">
+            <motion.span
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
+              className="text-transparent bg-clip-text bg-gradient-to-b from-white via-white to-white/50 block"
+            >
+              Pro Tools.
+            </motion.span>
+            <motion.span
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+              className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600 block"
+            >
+              Pure Focus.
+            </motion.span>
           </h1>
 
-          <p className="animate-apple-entrance delay-200 text-lg sm:text-2xl text-zinc-400 max-w-2xl mx-auto font-medium tracking-tight mb-12 leading-relaxed">
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
+            className="text-lg sm:text-2xl text-zinc-400 max-w-2xl mx-auto font-medium tracking-tight mb-12 leading-relaxed"
+          >
             One platform to command the entire tax operation. Capacity mapping, frictionless time tracking, and instant role switching.
-          </p>
+          </motion.p>
 
-          <div className="animate-apple-entrance delay-300 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <button
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.4 }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-4"
+          >
+            <MagneticButton
               onClick={() => window.open("/login", "_blank")}
-              className="group bg-white hover:bg-zinc-200 text-black font-semibold px-8 py-4 rounded-full text-sm transition-all duration-300 flex items-center justify-center gap-2.5 w-full sm:w-auto shadow-xl hover:shadow-white/20"
+              className="group bg-white hover:bg-zinc-200 text-black font-semibold px-8 py-4 rounded-full text-sm transition-colors duration-300 w-full sm:w-auto shadow-xl hover:shadow-white/20"
             >
-              Launch Dashboard
+              <span>Launch Dashboard</span>
               <ArrowUpRight size={16} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-            </button>
-          </div>
+            </MagneticButton>
+          </motion.div>
         </div>
       </section>
 

@@ -43,7 +43,9 @@ export default function Navbar() {
 
                         <div className="flex items-center gap-8">
                             <div className="flex-shrink-0 flex items-center gap-2">
-                                <span className="text-xl font-bold text-gray-900 dark:text-white">BudgetDog <span className="text-primary">Tax Command Center</span></span>
+                                <span className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white whitespace-nowrap">
+                                    BudgetDog<span className="text-primary hidden lg:inline ml-1">Tax Command Center</span>
+                                </span>
                             </div>
 
                             <div className="hidden md:flex space-x-4">
@@ -68,8 +70,8 @@ export default function Navbar() {
                                     <button
                                         onClick={() => setDivision("planning")}
                                         className={`px-3 py-1.5 rounded-md text-xs font-bold uppercase tracking-wider transition-all ${division === "planning"
-                                                ? "bg-primary text-black shadow-sm"
-                                                : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                                            ? "bg-primary text-black shadow-sm"
+                                            : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
                                             }`}
                                     >
                                         Planning
@@ -77,8 +79,8 @@ export default function Navbar() {
                                     <button
                                         onClick={() => setDivision("preparation")}
                                         className={`px-3 py-1.5 rounded-md text-xs font-bold uppercase tracking-wider transition-all ${division === "preparation"
-                                                ? "bg-primary text-black shadow-sm"
-                                                : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                                            ? "bg-primary text-black shadow-sm"
+                                            : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
                                             }`}
                                     >
                                         Preparation
