@@ -271,7 +271,7 @@ export default function LandingPage() {
             {/* Actual App Screenshot */}
             <div className="relative aspect-[16/9] w-full rounded-lg sm:rounded-2xl overflow-hidden border border-white/5 bg-[#0a0a0a]">
               <Image
-                src="/bento-actuals.png"
+                src="/hero-abstract.png"
                 alt="Budgetdog Command Center Dashboard"
                 fill
                 priority
