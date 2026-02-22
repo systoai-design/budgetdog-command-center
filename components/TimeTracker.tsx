@@ -542,7 +542,7 @@ export default function TimeTracker() {
             </div>
 
             {/* Grid / Table Layout */}
-            <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl shadow-sm overflow-hidden mb-8">
+            <div className="bg-[#111111]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8 relative overflow-hidden mb-8">
                 {/* Table Header (Hidden on mobile) */}
                 <div className="hidden sm:grid grid-cols-12 gap-4 p-4 border-b border-border-light dark:border-border-dark bg-gray-50/50 dark:bg-zinc-800/30 text-[10px] font-bold text-gray-500 uppercase tracking-wider">
                     <div className="col-span-4">Charge Code</div>
@@ -624,7 +624,7 @@ export default function TimeTracker() {
                                 <p className="text-gray-500">No entries found.</p>
                             </div>
                         ) : (
-                            <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl shadow-sm overflow-hidden overflow-x-auto">
+                            <div className="bg-[#111111]/80 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden mt-6">
                                 <table className="w-full text-left border-collapse">
                                     <thead>
                                         <tr className="bg-gray-50/50 dark:bg-zinc-800/30 text-[10px] font-bold text-gray-500 uppercase tracking-wider border-b border-border-light dark:border-border-dark">

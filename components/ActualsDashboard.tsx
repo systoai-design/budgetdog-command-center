@@ -26,7 +26,7 @@ function cn(...inputs: ClassValue[]) {
 // COLORS moved to component scope for semantic clarity
 
 const Card = ({ children, title, icon: Icon }: { children: React.ReactNode; title: string; icon: LucideIcon }) => (
-    <div className="bg-white/[0.02] backdrop-blur-3xl border border-white/[0.05] rounded-3xl p-6 shadow-2xl flex flex-col h-full hover:bg-white/[0.03] transition-colors">
+    <div className="bg-[#111111]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8 flex flex-col h-full hover:bg-white/[0.03] transition-colors">
         <div className="flex items-center gap-3 mb-6 text-yellow-500">
             <div className="p-2.5 bg-white/[0.05] rounded-xl border border-white/[0.1] shadow-inner">
                 <Icon size={20} className="drop-shadow-md" />
@@ -194,8 +194,9 @@ export default function ActualsDashboard() {
     };
 
     return (
-        <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2">
+        <div className="w-full space-y-8 animate-in fade-in duration-500">
+            {/* Header & Controls */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-[#111111]/80 backdrop-blur-xl border border-white/10 p-6 rounded-3xl">
                 <div className="flex flex-col gap-2">
                     <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                         <Activity className="text-primary" size={24} />

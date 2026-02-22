@@ -49,7 +49,7 @@ const Card = ({
 }) => (
     <div
         className={cn(
-            "bg-white/[0.02] backdrop-blur-3xl border border-white/[0.05] rounded-3xl overflow-hidden shadow-2xl shadow-black/50 p-6 md:p-8",
+            "bg-[#111111]/80 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden shadow-2xl shadow-black/50 p-6 md:p-8",
             className
         )}
     >
@@ -74,7 +74,7 @@ const MetricCard = ({
     valueColorClass?: string;
     tooltip?: string;
 }) => (
-    <div className="bg-white/[0.02] backdrop-blur-3xl border border-white/[0.05] rounded-3xl p-6 shadow-2xl flex items-center gap-5 relative group transition-all hover:bg-white/[0.04]">
+    <div className="bg-[#111111]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-6 shadow-2xl flex items-center gap-5 relative group transition-all hover:bg-white/[0.04]">
         <div className={cn("p-4 rounded-2xl bg-white/[0.05] border border-white/[0.1] shadow-inner", iconColorClass)}>
             <Icon size={26} className="text-current drop-shadow-md" />
         </div>

@@ -32,6 +32,8 @@ export default function Navbar() {
 
     if (!user) return null;
 
+    if (pathname.startsWith('/dashboard')) return null;
+
     const isActive = (path: string) => pathname === path;
     const currentViews = division === "planning" ? PLANNING_VIEWS : PREPARATION_VIEWS;
 
