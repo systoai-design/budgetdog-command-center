@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import TimeTracker from "@/components/TimeTracker";
 import HiringSimulator from "@/components/HiringSimulator";
 import LiveCapacityDashboard from "@/components/LiveCapacityDashboard";
@@ -18,11 +18,16 @@ export default function Dashboard() {
     const [activeTab, setActiveTab] = useState<"time" | "capacity" | "live" | "actuals">("time");
     const [isProfileOpen, setIsProfileOpen] = useState(false);
 
+    const wrapperRef = useRef<HTMLElement>(null);
+    const contentRef = useRef<HTMLDivElement>(null);
+
     // Lenis Smooth Scroll Setup
     useEffect(() => {
+        if (!wrapperRef.current || !contentRef.current) return;
+
         const lenis = new Lenis({
-            wrapper: document.getElementById('scroll-wrapper') as HTMLElement,
-            content: document.getElementById('scroll-content') as HTMLElement,
+            wrapper: wrapperRef.current,
+            content: contentRef.current,
             lerp: 0.08,
             wheelMultiplier: 1.2,
             orientation: 'vertical',
@@ -214,8 +219,8 @@ export default function Dashboard() {
             {/* ═══════════════════════════════════════════
                 MAIN CONTENT (LENIS SCROLL ZONE)
             ═══════════════════════════════════════════ */}
-            <main id="scroll-wrapper" className="flex-1 overflow-y-auto relative bg-[#0A0A0A]">
-                <div id="scroll-content" className="min-h-full pb-24">
+            <main ref={wrapperRef} className="flex-1 overflow-y-auto relative bg-[#0A0A0A]">
+                <div ref={contentRef} className="min-h-full pb-24">
 
                     {/* Sticky Main Header */}
                     <div className="sticky top-0 z-40 bg-[#0A0A0A]/80 backdrop-blur-2xl border-b border-white/5 pt-8 pb-6 px-8 sm:px-12">
