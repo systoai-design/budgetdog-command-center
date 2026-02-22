@@ -1,15 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { Coins, LogIn, ArrowRight, ShieldCheck, Mail, Lock, User as UserIcon, Eye, EyeOff, Loader2, ChevronDown, ArrowLeft, Clock, BarChart3, Shield, Layers, User } from "lucide-react";
+import { Mail, Lock, User, Eye, EyeOff, Loader2, ChevronDown, ArrowLeft, Clock, BarChart3, Shield, Layers } from "lucide-react";
 import Image from "next/image";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { CanvasBackground } from "@/components/3d/CanvasBackground";
-import { useSceneStore } from "@/store/useSceneStore";
-import Lenis from 'lenis';
+import HapticScrollTracker from "@/components/HapticScrollTracker";
 
 function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
@@ -49,26 +48,6 @@ export default function LoginPage() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [name, setName] = useState("");
-
-    // Lenis Smooth Scroll Setup
-    useEffect(() => {
-        const lenis = new Lenis({
-            lerp: 0.08,
-            wheelMultiplier: 1.2,
-            smoothWheel: true,
-        });
-
-        function raf(time: number) {
-            lenis.raf(time);
-            requestAnimationFrame(raf);
-        }
-
-        requestAnimationFrame(raf);
-
-        return () => {
-            lenis.destroy();
-        };
-    }, []);
 
     const handleAuth = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -115,7 +94,7 @@ export default function LoginPage() {
 
     return (
         <div className="min-h-screen bg-[#0a0a0a] flex">
-
+            <HapticScrollTracker />
             {/* ══════════════════════════════════════
           LEFT PANEL — Branding & Features
       ══════════════════════════════════════ */}

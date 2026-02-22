@@ -58,20 +58,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const [config, setConfig] = useState<{ admins: string[], domains: string[] }>({ admins: [], domains: [] });
 
-    // Intelligently handle division switching to preserve SuperAdmin views
+    // When division changes, reset viewMode to appropriate default
     const setDivision = (newDivision: Division) => {
         setDivisionState(newDivision);
-
-        // If the user is a super admin, ensure they default to their global admin view
         if (user?.isSuperAdmin) {
-            setViewMode("admin");
+            setViewMode(newDivision === "planning" ? "admin" : "tax_planning_admin");
         } else {
-            // For non-super admins, reset to default when switching divisions
-            if (newDivision === "planning") {
-                setViewMode("advisor");
-            } else {
-                setViewMode("preparer_l1");
-            }
+            setViewMode(newDivision === "planning" ? "advisor" : "tax_planning_admin");
         }
     };
 
@@ -147,9 +140,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 timezone: session.user.user_metadata.timezone || "America/New_York",
             });
 
-            // Set initial view mode globally for SuperAdmin
+            // Set initial view mode based on division
             if (isSuperAdmin) {
-                setViewMode("admin");
+                setViewMode(division === "planning" ? "admin" : "tax_planning_admin");
             } else {
                 setViewMode(role);
             }

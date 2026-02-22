@@ -5,6 +5,7 @@ import { Calendar, Clock, Save, RefreshCw, User, ChevronLeft, ChevronRight, File
 import { useAuth } from "@/context/AuthContext";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { triggerHaptic } from "@/lib/utils";
 
 function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
@@ -470,6 +471,7 @@ export default function TimeTracker() {
     const dailyTotalHours = (dailyTotalMinutes / 60).toFixed(1);
 
     const changeDate = (days: number) => {
+        triggerHaptic();
         const date = new Date(selectedDate);
         date.setDate(date.getDate() + days);
         setSelectedDate(date.toISOString().split('T')[0]);
@@ -483,10 +485,10 @@ export default function TimeTracker() {
     });
 
     return (
-        <div className="max-w-5xl mx-auto space-y-8 pb-20">
+        <div className="max-w-5xl mx-auto space-y-6 sm:space-y-8 pb-20 px-1 sm:px-0">
             {/* Header / Controls */}
-            <div className="flex flex-col md:flex-row justify-between items-center gap-6 sticky top-20 z-30 bg-background dark:bg-background py-4 border-b border-border-light dark:border-border-dark">
-                <div>
+            <div className="flex flex-col lg:flex-row justify-between items-center gap-6 lg:sticky lg:top-20 z-30 bg-[#000000] py-4 border-b border-white/10 transition-all">
+                <div className="w-full lg:w-auto text-center lg:text-left">
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Time Tracker</h1>
                     <p className="text-gray-500 text-sm">
                         Logging as <span className="font-bold uppercase text-primary">{viewMode}</span>
@@ -523,17 +525,20 @@ export default function TimeTracker() {
                     )}
                 </div>
 
-                <div className="flex items-center gap-6">
-                    <div className="text-right hidden sm:block">
+                <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 mt-4 md:mt-0 w-full md:w-auto">
+                    <div className="text-center sm:text-right w-full sm:w-auto">
                         <div className="text-xs uppercase font-bold text-gray-500">Daily Total</div>
                         <div className="text-2xl font-bold font-mono text-gray-900 dark:text-white">
                             {dailyTotalHours} <span className="text-sm font-sans font-normal text-gray-500">hrs</span>
                         </div>
                     </div>
                     <button
-                        onClick={handleSave}
+                        onClick={() => {
+                            triggerHaptic();
+                            handleSave();
+                        }}
                         disabled={isSaving || isLoading}
-                        className="bg-primary hover:bg-primary-hover text-black font-bold py-3 px-6 rounded-xl shadow-lg shadow-primary/20 transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2"
+                        className="w-full sm:w-auto bg-primary hover:bg-primary-hover text-black font-bold py-3 px-6 rounded-xl shadow-lg shadow-primary/20 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
                     >
                         {isSaving ? <RefreshCw className="animate-spin" size={20} /> : <Save size={20} />}
                         {isSaving ? "Saving..." : "Save Daily Log"}
@@ -542,63 +547,65 @@ export default function TimeTracker() {
             </div>
 
             {/* Grid / Table Layout */}
-            <div className="bg-[#111111]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8 relative overflow-hidden mb-8">
-                {/* Table Header (Hidden on mobile) */}
-                <div className="hidden sm:grid grid-cols-12 gap-4 p-4 border-b border-border-light dark:border-border-dark bg-gray-50/50 dark:bg-zinc-800/30 text-[10px] font-bold text-gray-500 uppercase tracking-wider">
-                    <div className="col-span-4">Charge Code</div>
-                    <div className="col-span-5">Notes (Optional)</div>
-                    <div className="col-span-3 text-right pr-2">Duration</div>
-                </div>
+            <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl shadow-sm overflow-hidden overflow-x-auto mb-8">
+                <div className="min-w-[700px]">
+                    {/* Table Header (Hidden on mobile) */}
+                    <div className="hidden sm:grid grid-cols-12 gap-4 p-4 border-b border-border-light dark:border-border-dark bg-gray-50/50 dark:bg-zinc-800/30 text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                        <div className="col-span-4">Charge Code</div>
+                        <div className="col-span-5">Notes (Optional)</div>
+                        <div className="col-span-3 text-right pr-2">Duration</div>
+                    </div>
 
-                {/* Table Body */}
-                <div className="divide-y divide-border-light dark:divide-border-dark">
-                    {currentCodes.map((code) => (
-                        <div key={code} className="grid grid-cols-1 sm:grid-cols-12 gap-y-3 sm:gap-4 p-4 items-center hover:bg-gray-50/50 dark:hover:bg-zinc-800/30 transition-colors group">
-                            {/* Code Column */}
-                            <div className="col-span-1 sm:col-span-4">
-                                <h3 className="font-bold text-gray-900 dark:text-white text-sm">{code}</h3>
-                            </div>
+                    {/* Table Body */}
+                    <div className="divide-y divide-border-light dark:divide-border-dark">
+                        {currentCodes.map((code) => (
+                            <div key={code} className="grid grid-cols-1 sm:grid-cols-12 gap-y-3 sm:gap-4 p-4 items-center hover:bg-gray-50/50 dark:hover:bg-zinc-800/30 transition-colors group">
+                                {/* Code Column */}
+                                <div className="col-span-1 sm:col-span-4">
+                                    <h3 className="font-bold text-gray-900 dark:text-white text-sm">{code}</h3>
+                                </div>
 
-                            {/* Notes Column */}
-                            <div className="col-span-1 sm:col-span-5">
-                                <input
-                                    type="text"
-                                    placeholder="Add notes..."
-                                    value={gridState[code]?.notes || ""}
-                                    onChange={(e) => handleNotesChange(code, e.target.value)}
-                                    className="w-full bg-transparent text-sm text-gray-700 dark:text-gray-300 placeholder:text-gray-400 dark:placeholder:text-zinc-600 border-b border-transparent focus:border-primary outline-none transition-colors py-1.5"
-                                />
-                            </div>
-
-                            {/* Time Column (Compact Inputs) */}
-                            <div className="col-span-1 sm:col-span-3 flex items-center justify-start sm:justify-end">
-                                <div className="flex items-center bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-lg overflow-hidden focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all shadow-sm group-hover:border-gray-300 dark:group-hover:border-zinc-600">
+                                {/* Notes Column */}
+                                <div className="col-span-1 sm:col-span-5">
                                     <input
-                                        type="number"
-                                        min="0"
-                                        placeholder="0"
-                                        value={gridState[code]?.hours || ""}
-                                        onChange={(e) => handleInputChange(code, "hours", e.target.value)}
-                                        className="w-12 h-9 text-center text-base font-bold bg-transparent outline-none text-gray-900 dark:text-white"
+                                        type="text"
+                                        placeholder="Add notes..."
+                                        value={gridState[code]?.notes || ""}
+                                        onChange={(e) => handleNotesChange(code, e.target.value)}
+                                        className="w-full bg-transparent text-sm text-gray-700 dark:text-gray-300 placeholder:text-gray-400 dark:placeholder:text-zinc-600 border-b border-transparent focus:border-primary outline-none transition-colors py-1.5"
                                     />
-                                    <span className="text-[10px] font-bold text-gray-400 uppercase mr-1">hr</span>
+                                </div>
 
-                                    <div className="w-px h-5 bg-gray-200 dark:bg-zinc-700 mx-1"></div>
+                                {/* Time Column (Compact Inputs) */}
+                                <div className="col-span-1 sm:col-span-3 flex items-center justify-start sm:justify-end">
+                                    <div className="flex items-center bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-lg overflow-hidden focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all shadow-sm group-hover:border-gray-300 dark:group-hover:border-zinc-600">
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            placeholder="0"
+                                            value={gridState[code]?.hours || ""}
+                                            onChange={(e) => handleInputChange(code, "hours", e.target.value)}
+                                            className="w-12 h-9 text-center text-base font-bold bg-transparent outline-none text-gray-900 dark:text-white"
+                                        />
+                                        <span className="text-[10px] font-bold text-gray-400 uppercase mr-1">hr</span>
 
-                                    <input
-                                        type="number"
-                                        min="0"
-                                        max="59"
-                                        placeholder="0"
-                                        value={gridState[code]?.minutes || ""}
-                                        onChange={(e) => handleInputChange(code, "minutes", e.target.value)}
-                                        className="w-12 h-9 text-center text-base font-bold bg-transparent outline-none text-gray-900 dark:text-white"
-                                    />
-                                    <span className="text-[10px] font-bold text-gray-400 uppercase pr-3 mr-1">m</span>
+                                        <div className="w-px h-5 bg-gray-200 dark:bg-zinc-700 mx-1"></div>
+
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            max="59"
+                                            placeholder="0"
+                                            value={gridState[code]?.minutes || ""}
+                                            onChange={(e) => handleInputChange(code, "minutes", e.target.value)}
+                                            className="w-12 h-9 text-center text-base font-bold bg-transparent outline-none text-gray-900 dark:text-white"
+                                        />
+                                        <span className="text-[10px] font-bold text-gray-400 uppercase pr-3 mr-1">m</span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
                 </div>
             </div>
 
@@ -624,7 +631,7 @@ export default function TimeTracker() {
                                 <p className="text-gray-500">No entries found.</p>
                             </div>
                         ) : (
-                            <div className="bg-[#111111]/80 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden mt-6">
+                            <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl shadow-sm overflow-hidden overflow-x-auto">
                                 <table className="w-full text-left border-collapse">
                                     <thead>
                                         <tr className="bg-gray-50/50 dark:bg-zinc-800/30 text-[10px] font-bold text-gray-500 uppercase tracking-wider border-b border-border-light dark:border-border-dark">

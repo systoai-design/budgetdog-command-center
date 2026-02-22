@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { triggerHaptic } from "@/lib/utils";
 
 // ... (existing imports)
 
@@ -49,7 +50,7 @@ const Card = ({
 }) => (
     <div
         className={cn(
-            "bg-[#111111]/80 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden shadow-2xl shadow-black/50 p-6 md:p-8",
+            "bg-white/[0.02] backdrop-blur-3xl border border-white/[0.05] rounded-3xl overflow-hidden shadow-2xl shadow-black/50 p-6 md:p-8",
             className
         )}
     >
@@ -74,7 +75,7 @@ const MetricCard = ({
     valueColorClass?: string;
     tooltip?: string;
 }) => (
-    <div className="bg-[#111111]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-6 shadow-2xl flex items-center gap-5 relative group transition-all hover:bg-white/[0.04]">
+    <div className="bg-white/[0.02] backdrop-blur-3xl border border-white/[0.05] rounded-3xl p-6 shadow-2xl flex items-center gap-5 relative group transition-all hover:bg-white/[0.04]">
         <div className={cn("p-4 rounded-2xl bg-white/[0.05] border border-white/[0.1] shadow-inner", iconColorClass)}>
             <Icon size={26} className="text-current drop-shadow-md" />
         </div>
@@ -135,7 +136,10 @@ const SliderControl = ({ label, value, min, max, onChange, unit, step = 1, stric
             max={max}
             step={step}
             value={value}
-            onChange={(e) => onChange(Number(e.target.value))}
+            onChange={(e) => {
+                triggerHaptic();
+                onChange(Number(e.target.value));
+            }}
             className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-primary"
         />
     </div>

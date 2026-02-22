@@ -3,13 +3,13 @@
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight, ArrowUpRight, Activity, Shield, Users, Database, Zap, HardDrive, Cpu, Cloud, Network } from "lucide-react";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import Lenis from 'lenis';
 
 import { CanvasBackground } from "@/components/3d/CanvasBackground";
 import { useSceneStore } from "@/store/useSceneStore";
+import HapticScrollTracker from "@/components/HapticScrollTracker";
 
 /* ───────────────────────────────────────────────
    FADE IN VIEW WRAPPER
@@ -74,32 +74,6 @@ export default function LandingPage() {
   const { user } = useAuth();
   const router = useRouter();
   const { setPointer, setScrollY } = useSceneStore();
-  const [randomWidths, setRandomWidths] = useState<number[]>([]);
-
-  // Hydration-safe random widths
-  useEffect(() => {
-    setRandomWidths([...Array(4)].map(() => Math.random() * 60 + 20));
-  }, []);
-
-  // Lenis Smooth Scroll Setup
-  useEffect(() => {
-    const lenis = new Lenis({
-      lerp: 0.08,
-      wheelMultiplier: 1.2,
-      smoothWheel: true,
-    });
-
-    function raf(time: number) {
-      lenis.raf(time);
-      requestAnimationFrame(raf);
-    }
-
-    requestAnimationFrame(raf);
-
-    return () => {
-      lenis.destroy();
-    };
-  }, []);
 
   useEffect(() => {
     if (user) router.push("/dashboard");
@@ -126,6 +100,7 @@ export default function LandingPage() {
       className="bg-[#000000] text-white selection:bg-white/20 overflow-x-hidden relative"
       onPointerMove={handlePointerMove}
     >
+      <HapticScrollTracker />
       {/* ── Background 3D Layer ── */}
       <CanvasBackground />
 
@@ -149,14 +124,6 @@ export default function LandingPage() {
             0% { left: -100%; top: -100%; }
             20% { left: 100%; top: 100%; }
             100% { left: 100%; top: 100%; }
-        }
-        
-        @keyframes marquee {
-            0% { transform: translateX(0%); }
-            100% { transform: translateX(-50%); }
-        }
-        .animate-marquee {
-            animation: marquee 30s linear infinite;
         }
       `}</style>
 
@@ -192,37 +159,32 @@ export default function LandingPage() {
       {/* ═══════════════════════════════════════════
           HERO — Massive typography, stark contrast
       ═══════════════════════════════════════════ */}
-      <section className="relative min-h-screen pt-32 sm:pt-40 pb-20 sm:pb-32 flex flex-col items-center justify-start px-6 lg:px-10 z-10 pointer-events-none">
+      <section className="relative h-screen flex flex-col items-center justify-center px-6 lg:px-10 z-10 pointer-events-none">
 
-        <div className="max-w-5xl mx-auto w-full text-center relative pointer-events-auto">
+        <div className="max-w-5xl mx-auto w-full text-center relative pointer-events-auto mt-20">
           {/* Minimalist Badge */}
-          <div className="animate-apple-entrance inline-flex items-center gap-2 border border-white/[0.1] bg-white/[0.05] backdrop-blur-md rounded-full px-4 py-1.5 mb-8 shadow-lg shadow-white/5 hover:bg-white/[0.1] transition-colors cursor-default">
-            <span className="text-[10px] font-bold text-zinc-300 uppercase tracking-widest flex items-center gap-2">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-yellow-500"></span>
-              </span>
-              Internal Access Verified
-            </span>
+          <div className="animate-apple-entrance inline-flex items-center gap-2 border border-white/[0.1] bg-white/[0.03] backdrop-blur-md rounded-full px-4 py-1.5 mb-8">
+            <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
+            <span className="text-[10px] font-bold text-zinc-300 uppercase tracking-widest">System Online</span>
           </div>
 
           {/* Headline */}
-          <h1 className="text-[clamp(3.5rem,8vw,6rem)] font-bold leading-[1.1] tracking-tighter mb-6 flex flex-col items-center max-w-4xl mx-auto">
+          <h1 className="text-[clamp(3.5rem,8vw,8rem)] font-bold leading-[1.05] tracking-tighter mb-8 flex flex-col items-center">
             <motion.span
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
-              className="text-white block drop-shadow-2xl"
+              className="text-transparent bg-clip-text bg-gradient-to-b from-white via-white to-white/50 block"
             >
-              Internal Operations
+              Pro Tools.
             </motion.span>
             <motion.span
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
-              className="text-transparent bg-clip-text bg-gradient-to-b from-yellow-300 via-yellow-500 to-yellow-700 block drop-shadow-[0_0_40px_rgba(234,179,8,0.3)] pb-2"
+              className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600 block"
             >
-              Command Center
+              Pure Focus.
             </motion.span>
           </h1>
 
@@ -230,163 +192,225 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
-            className="text-lg sm:text-xl text-zinc-400 max-w-2xl mx-auto font-medium tracking-tight mb-10 leading-relaxed"
+            className="text-lg sm:text-2xl text-zinc-400 max-w-2xl mx-auto font-medium tracking-tight mb-12 leading-relaxed"
           >
-            Live data, capacity planning playground, time tracking, and automated reporting.
+            One platform to command the entire tax operation. Capacity mapping, frictionless time tracking, and instant role switching.
           </motion.p>
 
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.4 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-4"
           >
             <MagneticButton
               onClick={() => window.open("/login", "_blank")}
-              className="group bg-white hover:bg-zinc-200 text-black font-semibold px-8 py-4 rounded-full text-sm transition-all duration-300 w-full sm:w-auto shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:shadow-[0_0_40px_rgba(255,255,255,0.4)] flex items-center justify-center gap-2"
+              className="group bg-white hover:bg-zinc-200 text-black font-semibold px-8 py-4 rounded-full text-sm transition-colors duration-300 w-full sm:w-auto shadow-xl hover:shadow-white/20"
             >
               <span>Launch Dashboard</span>
-              <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+              <ArrowUpRight size={16} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
             </MagneticButton>
           </motion.div>
         </div>
-
-        {/* ═══════════════════════════════════════════
-            DASHBOARD SHOWCASE MAC (GLOWING WRAPPER)
-        ═══════════════════════════════════════════ */}
-        <motion.div
-          initial={{ opacity: 0, y: 60 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: 0.6 }}
-          className="relative mt-20 sm:mt-24 w-full max-w-6xl mx-auto perspective-[2000px] pointer-events-auto"
-        >
-          <div className="relative rounded-xl sm:rounded-3xl border border-white/10 bg-white/[0.02] backdrop-blur-3xl shadow-[0_0_100px_rgba(234,179,8,0.15)] p-2 sm:p-4 overflow-hidden group hover:shadow-[0_0_120px_rgba(234,179,8,0.2)] transition-shadow duration-700">
-            {/* Mac OS Window Dots */}
-            <div className="flex gap-2 mb-3 sm:mb-4 px-2">
-              <div className="w-2.5 h-2.5 rounded-full bg-red-500/80"></div>
-              <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/80"></div>
-              <div className="w-2.5 h-2.5 rounded-full bg-green-500/80"></div>
-            </div>
-
-            {/* Actual App Screenshot */}
-            <div className="relative aspect-[16/9] w-full rounded-lg sm:rounded-2xl overflow-hidden border border-white/5 bg-[#0a0a0a]">
-              <Image
-                src="/bento-live.png"
-                alt="Budgetdog Command Center Dashboard"
-                fill
-                priority
-                className="object-cover object-top transition-transform duration-1000 ease-out group-hover:scale-[1.02]"
-              />
-
-              {/* Embedded Glass Reflection */}
-              <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.03] to-transparent pointer-events-none"></div>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Subtle Bottom Gradient Fade for the hero container */}
-        <div className="absolute bottom-0 inset-x-0 h-40 bg-gradient-to-t from-black via-black/80 to-transparent pointer-events-none"></div>
       </section>
 
       {/* ═══════════════════════════════════════════
-          BENTO GRID O.S. MODULES
+          SHOWCASE 1: TIME TRACKER
       ═══════════════════════════════════════════ */}
-      <section className="relative py-24 z-10 px-6 lg:px-10 overflow-hidden border-t border-white/[0.05]">
-        <div className="max-w-6xl mx-auto flex flex-col items-center">
-
-          <div className="text-center mb-16 animate-apple-entrance flex flex-col items-center">
-            <h2 className="text-4xl md:text-5xl font-bold tracking-tighter text-white mb-6 drop-shadow-lg">
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-yellow-600">Command Center</span>
-              <br />Modules.
-            </h2>
-            <p className="text-zinc-400 text-lg max-w-2xl mx-auto">
-              Live application interfaces. Secure internal access only.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-
-            {/* Bento 1: Actuals Analytics */}
-            <FadeInView delay={0.1}>
-              <div className="group rounded-3xl border border-white/[0.08] bg-black/40 backdrop-blur-xl p-8 hover:bg-white/[0.02] transition-colors h-full flex flex-col overflow-hidden relative">
-                <div className="relative z-10 mb-8">
-                  <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center mb-6">
-                    <Activity className="text-blue-500" />
+      <section className="relative py-32 z-10 px-6 lg:px-10 overflow-hidden">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-24">
+            <div className="flex-1 lg:max-w-xl">
+              <FadeInView>
+                <div className="w-12 h-12 rounded-2xl bg-white/[0.05] border border-white/[0.1] flex items-center justify-center mb-8 backdrop-blur-md">
+                  <span className="text-white text-xl">⌘</span>
+                </div>
+                <h2 className="text-[clamp(2.5rem,5vw,4.5rem)] font-bold tracking-tighter leading-tight bg-clip-text text-transparent bg-gradient-to-br from-white to-zinc-500 mb-6">
+                  Frictionless logging.
+                </h2>
+                <p className="text-zinc-400 text-lg md:text-xl leading-relaxed font-medium">
+                  Role-aware time entry interfaces. Advisors see kickoff calls and projections; Preparers see organizers and e-filing. Clean, direct, and zero clutter.
+                </p>
+              </FadeInView>
+            </div>
+            <div className="flex-1 w-full" style={{ perspective: "1000px" }}>
+              <FadeInView delay={0.2}>
+                <motion.div whileHover={{ scale: 1.02, rotateY: -5, rotateX: 5 }} transition={{ type: "spring", stiffness: 400, damping: 30 }} className="p-1 min-h-[400px] bg-gradient-to-b from-white/[0.08] to-transparent rounded-3xl relative" style={{ transformStyle: "preserve-3d" }}>
+                  <div className="absolute inset-0 bg-[#000000] rounded-3xl -z-10" />
+                  <div className="h-full w-full bg-white/[0.02] backdrop-blur-3xl rounded-[23px] border border-white/[0.05] p-6 shadow-2xl overflow-hidden flex flex-col gap-3">
+                    {/* Fake header */}
+                    <div className="flex justify-between items-center mb-4 border-b border-white/[0.05] pb-4">
+                      <div className="w-32 h-6 bg-white/[0.05] rounded-md" />
+                      <div className="w-24 h-8 bg-yellow-500/20 border border-yellow-500/30 rounded-full" />
+                    </div>
+                    {/* Fake rows */}
+                    {[...Array(5)].map((_, i) => (
+                      <div key={i} className="flex justify-between items-center p-3 rounded-xl bg-white/[0.02] border border-white/[0.02]">
+                        <div className="flex flex-col gap-2">
+                          <div className="w-48 h-4 bg-white/[0.1] rounded" />
+                          <div className="w-24 h-3 bg-white/[0.05] rounded" />
+                        </div>
+                        <div className="flex gap-2">
+                          <div className="w-12 h-8 bg-black/40 rounded-lg" />
+                          <div className="w-12 h-8 bg-black/40 rounded-lg" />
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  <h3 className="text-2xl font-bold tracking-tight text-white mb-2">Live Reporting</h3>
-                  <p className="text-zinc-400 font-medium">Instantly pivot between internal divisions with real-time analytics.</p>
-                </div>
-
-                <div className="mt-auto relative w-full pt-[50%] rounded-t-xl border-x border-t border-white/[0.05] bg-white/[0.01] overflow-hidden translate-y-4 group-hover:translate-y-2 transition-transform duration-500">
-                  <Image src="/bento-actuals.png" alt="Actuals Analytics" fill className="object-cover object-top opacity-80 group-hover:opacity-100 transition-opacity duration-500" />
-                  <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/80 to-transparent pointer-events-none"></div>
-                </div>
-              </div>
-            </FadeInView>
-
-            {/* Bento 2: Capacity Planner */}
-            <FadeInView delay={0.2}>
-              <div className="group rounded-3xl border border-white/[0.08] bg-black/40 backdrop-blur-xl p-8 hover:bg-white/[0.02] transition-colors h-full flex flex-col overflow-hidden relative">
-                <div className="relative z-10 mb-8">
-                  <div className="w-12 h-12 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-6">
-                    <Zap className="text-red-500" />
-                  </div>
-                  <h3 className="text-2xl font-bold tracking-tight text-white mb-2">Capacity Simulator</h3>
-                  <p className="text-zinc-400 font-medium">Internal playground for modeling theoretical hires and constraints.</p>
-                </div>
-
-                <div className="mt-auto relative w-full pt-[50%] rounded-t-xl border-x border-t border-white/[0.05] bg-white/[0.01] overflow-hidden translate-y-4 group-hover:translate-y-2 transition-transform duration-500">
-                  <Image src="/bento-capacity.png" alt="Capacity Planner Simulator" fill className="object-cover object-top opacity-80 group-hover:opacity-100 transition-opacity duration-500" />
-                  <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/80 to-transparent pointer-events-none"></div>
-                </div>
-              </div>
-            </FadeInView>
-
-            {/* Bento 3: Time Tracking */}
-            <FadeInView delay={0.3}>
-              <div className="group rounded-3xl border border-white/[0.08] bg-black/40 backdrop-blur-xl p-8 hover:bg-white/[0.02] transition-colors h-full flex flex-col overflow-hidden relative">
-                <div className="relative z-10 mb-8">
-                  <div className="w-12 h-12 rounded-xl bg-green-500/10 border border-green-500/20 flex items-center justify-center mb-6">
-                    <HardDrive className="text-green-500" />
-                  </div>
-                  <h3 className="text-2xl font-bold tracking-tight text-white mb-2">Time Tracking</h3>
-                  <p className="text-zinc-400 font-medium">Role-aware entry logs strictly mapped by operating division.</p>
-                </div>
-
-                <div className="mt-auto relative w-full pt-[50%] rounded-xl border border-white/[0.05] bg-white/[0.01] overflow-hidden group-hover:scale-[1.02] transition-transform duration-500">
-                  <Image src="/bento-time.png" alt="Time Tracking Log" fill className="object-cover object-top opacity-80 group-hover:opacity-100 transition-opacity duration-500" />
-                </div>
-              </div>
-            </FadeInView>
-
-            {/* Bento 4: Live Capacity */}
-            <FadeInView delay={0.4}>
-              <div className="group rounded-3xl border border-white/[0.08] bg-black/40 backdrop-blur-xl p-8 hover:bg-white/[0.02] transition-colors h-full flex flex-col overflow-hidden relative">
-                <div className="relative z-10 mb-8">
-                  <div className="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mb-6">
-                    <Shield className="text-purple-500" />
-                  </div>
-                  <h3 className="text-2xl font-bold tracking-tight text-white mb-2">Live Capacity</h3>
-                  <p className="text-zinc-400 font-medium">True limit modeling calculated via verified 30-day trailing averages.</p>
-                </div>
-
-                <div className="mt-auto relative w-full pt-[50%] rounded-xl border border-white/[0.05] bg-white/[0.01] overflow-hidden group-hover:scale-[1.02] transition-transform duration-500">
-                  <Image src="/bento-live.png" alt="Live Team Capacity" fill className="object-cover object-top opacity-80 group-hover:opacity-100 transition-opacity duration-500" />
-                </div>
-              </div>
-            </FadeInView>
-
+                </motion.div>
+              </FadeInView>
+            </div>
           </div>
         </div>
       </section>
 
-      <footer className="relative z-10 py-12 text-center border-t border-white/[0.05]">
-        <div className="flex flex-col items-center justify-center gap-4">
-          <Image src="/logo2.png" alt="Budgetdog" width={120} height={40} className="object-contain opacity-50 hover:opacity-100 transition-opacity" />
-          <p className="text-xs font-semibold tracking-widest text-zinc-600 uppercase">
-            Internal Operations Hub &copy; {new Date().getFullYear()}
-          </p>
+      {/* ═══════════════════════════════════════════
+          SHOWCASE 2: CAPACITY PLANNER
+      ═══════════════════════════════════════════ */}
+      <section className="relative py-32 z-10 px-6 lg:px-10 overflow-hidden">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col lg:flex-row-reverse items-center gap-16 lg:gap-24">
+            <div className="flex-1 lg:max-w-xl">
+              <FadeInView>
+                <div className="w-12 h-12 rounded-2xl bg-white/[0.05] border border-white/[0.1] flex items-center justify-center mb-8 backdrop-blur-md">
+                  <span className="text-white text-xl">⚡</span>
+                </div>
+                <h2 className="text-[clamp(2.5rem,5vw,4.5rem)] font-bold tracking-tighter leading-tight bg-clip-text text-transparent bg-gradient-to-br from-white to-zinc-500 mb-6">
+                  Know your limits.<br />Before they break.
+                </h2>
+                <p className="text-zinc-400 text-lg md:text-xl leading-relaxed font-medium">
+                  Model team output limits instantly via real-time slider arrays. Set arbitrary assumptions and view immediate physical limits.
+                </p>
+              </FadeInView>
+            </div>
+            <div className="flex-1 w-full" style={{ perspective: "1000px" }}>
+              <FadeInView delay={0.2}>
+                <motion.div whileHover={{ scale: 1.02, rotateY: 5, rotateX: 5 }} transition={{ type: "spring", stiffness: 400, damping: 30 }} className="p-1 min-h-[400px] bg-gradient-to-b from-red-500/[0.1] to-transparent rounded-3xl relative" style={{ transformStyle: "preserve-3d" }}>
+                  <div className="absolute inset-0 bg-[#000000] rounded-3xl -z-10" />
+                  <div className="h-full w-full bg-white/[0.02] backdrop-blur-3xl rounded-[23px] border border-red-500/[0.2] p-6 shadow-2xl flex flex-col gap-6">
+                    {/* Red warning banner */}
+                    <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3">
+                      <div className="w-1.5 h-10 bg-red-500 rounded-full" />
+                      <div>
+                        <div className="text-red-500 font-bold text-sm">CRITICAL: OVER CAPACITY</div>
+                        <div className="text-red-500/70 text-xs mt-1">Firm is over target capacity. The Advisors team is the bottleneck.</div>
+                      </div>
+                    </div>
+                    <div className="flex gap-6">
+                      {/* Sliders fake */}
+                      <div className="w-1/3 flex flex-col gap-4">
+                        {[...Array(4)].map((_, i) => (
+                          <div key={i}>
+                            <div className="flex justify-between mb-2">
+                              <div className="w-20 h-3 bg-white/[0.1] rounded" />
+                              <div className="w-8 h-3 bg-yellow-500/50 rounded" />
+                            </div>
+                            <div className="h-2 w-full bg-white/[0.05] rounded-full overflow-hidden">
+                              <div className="h-full bg-yellow-500" style={{ width: `${Math.random() * 60 + 20}%` }} />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      {/* Data blocks */}
+                      <div className="w-2/3 grid grid-cols-2 gap-4">
+                        {[...Array(4)].map((_, i) => (
+                          <div key={i} className="bg-white/[0.03] border border-white/[0.05] rounded-xl p-4 flex flex-col items-center justify-center">
+                            <div className="w-8 h-8 rounded-full bg-white/[0.05] mb-3" />
+                            <div className="w-16 h-6 bg-white/[0.1] rounded mb-1" />
+                            <div className="w-24 h-3 bg-white/[0.05] rounded" />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              </FadeInView>
+            </div>
+          </div>
         </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════
+          SHOWCASE 3: ACTUALS ANALYSIS
+      ═══════════════════════════════════════════ */}
+      <section className="relative py-32 z-10 px-6 lg:px-10 overflow-hidden">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-24">
+            <div className="flex-1 lg:max-w-xl">
+              <FadeInView>
+                <div className="w-12 h-12 rounded-2xl bg-white/[0.05] border border-white/[0.1] flex items-center justify-center mb-8 backdrop-blur-md">
+                  <span className="text-white text-xl">◓</span>
+                </div>
+                <h2 className="text-[clamp(2.5rem,5vw,4.5rem)] font-bold tracking-tighter leading-tight bg-clip-text text-transparent bg-gradient-to-br from-white to-zinc-500 mb-6">
+                  Metrics that matter.
+                </h2>
+                <p className="text-zinc-400 text-lg md:text-xl leading-relaxed font-medium">
+                  Instantly toggle between departments. Automatically pivot charge codes, capacity models, and reporting structures.
+                </p>
+              </FadeInView>
+            </div>
+            <div className="flex-1 w-full" style={{ perspective: "1000px" }}>
+              <FadeInView delay={0.2}>
+                <motion.div whileHover={{ scale: 1.02, rotateY: -5, rotateX: -5 }} transition={{ type: "spring", stiffness: 400, damping: 30 }} className="p-1 min-h-[400px] bg-gradient-to-b from-blue-500/[0.1] to-transparent rounded-3xl relative" style={{ transformStyle: "preserve-3d" }}>
+                  <div className="absolute inset-0 bg-[#000000] rounded-3xl -z-10" />
+                  <div className="h-full w-full bg-white/[0.02] backdrop-blur-3xl rounded-[23px] border border-blue-500/[0.1] p-6 shadow-2xl flex flex-col gap-6">
+                    <div className="flex gap-4 mb-2">
+                      <div className="px-4 py-2 bg-white/[0.1] rounded-lg w-24 h-8" />
+                      <div className="px-4 py-2 bg-white/[0.05] rounded-lg w-24 h-8" />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 flex-1">
+                      <div className="bg-white/[0.02] border border-white/[0.05] rounded-xl p-4 flex flex-col justify-end gap-2 relative overflow-hidden">
+                        {/* Fake bar chart */}
+                        <div className="absolute top-4 left-4 font-bold text-white/50 text-sm">Weekly Trend</div>
+                        <div className="flex items-end justify-around h-32 mt-8 w-full">
+                          <div className="w-8 bg-blue-500/80 rounded-t-sm h-[40%]" />
+                          <div className="w-8 bg-blue-500/80 rounded-t-sm h-[60%]" />
+                          <div className="w-8 bg-yellow-500/80 rounded-t-sm h-[90%]" />
+                        </div>
+                      </div>
+                      <div className="bg-white/[0.02] border border-white/[0.05] rounded-xl p-4 flex items-center justify-center relative">
+                        {/* Fake pie chart (CSS conic gradient) */}
+                        <div className="absolute top-4 left-4 font-bold text-white/50 text-sm">Role Dist.</div>
+                        <div className="w-32 h-32 rounded-full mt-4" style={{ background: "conic-gradient(#eab308 0% 40%, #3b82f6 40% 85%, #a855f7 85% 100%)", maskImage: "radial-gradient(transparent 55%, black 56%)", WebkitMaskImage: "radial-gradient(transparent 55%, black 56%)" }} />
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              </FadeInView>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════
+          CTA & FOOTER — Extreme Minimalism
+      ═══════════════════════════════════════════ */}
+      < section className="relative py-40 z-10 px-6 lg:px-10 border-t border-white/[0.05]" >
+        <div className="max-w-4xl mx-auto text-center">
+
+          <h2 className="animate-apple-entrance text-[clamp(3rem,8vw,7rem)] font-bold tracking-tighter leading-[1.05] mb-12 flex flex-col items-center">
+            <div className="mb-4 sm:mb-6 w-48 sm:w-64 lg:w-80">
+              <Image src="/logo2.png" alt="Budgetdog" width={400} height={150} className="w-full h-auto object-contain" />
+            </div>
+            <span className="text-white">Operating System.</span>
+          </h2>
+
+          <button
+            onClick={() => window.open("/login", "_blank")}
+            className="group relative inline-flex items-center justify-center gap-2 rounded-full px-8 py-4 bg-white/[0.05] border border-white/[0.1] text-white font-medium hover:bg-white hover:text-black transition-all duration-500 backdrop-blur-xl"
+          >
+            Authenticate via Supabase
+            <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+          </button>
+
+        </div>
+      </section >
+
+      <footer className="relative z-10 py-8 text-center border-t border-white/[0.02]">
+        <p className="text-xs font-semibold tracking-widest text-zinc-600 uppercase">
+          Internal Operations Hub &copy; {new Date().getFullYear()}
+        </p>
       </footer>
     </div >
   );

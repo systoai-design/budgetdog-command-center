@@ -98,7 +98,7 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
             setAvatarUrl(data.publicUrl);
         } catch (error: any) {
             console.error("Error uploading avatar:", error);
-            if (error.message?.toLowerCase().includes("bucket not found")) {
+            if (error.message?.includes("bucket not found")) {
                 alert("Error: The 'avatars' storage bucket does not exist. Please create a public bucket named 'avatars' in your Supabase project.");
             } else {
                 alert("Error uploading image: " + error.message);

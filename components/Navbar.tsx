@@ -8,7 +8,6 @@ import { LayoutDashboard, LogOut } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import ProfileModal from "@/components/ProfileModal";
 import type { Division, ViewMode } from "@/context/AuthContext";
-import Image from "next/image";
 
 // --- View Mode Options per Division ---
 const PLANNING_VIEWS: { value: ViewMode; label: string }[] = [
@@ -18,7 +17,6 @@ const PLANNING_VIEWS: { value: ViewMode; label: string }[] = [
 ];
 
 const PREPARATION_VIEWS: { value: ViewMode; label: string }[] = [
-    { value: "admin", label: "Super Admin (All)" },
     { value: "tax_planning_admin", label: "Tax Planning Admin" },
     { value: "tax_prep_admin", label: "Tax Preparation Admin" },
     { value: "preparer_l1", label: "Preparer Level 1" },
@@ -34,7 +32,8 @@ export default function Navbar() {
 
     if (!user) return null;
 
-    if (pathname.startsWith('/dashboard')) return null;
+    // Hide global top navbar specifically on the command center dashboard
+    if (pathname === "/dashboard") return null;
 
     const isActive = (path: string) => pathname === path;
     const currentViews = division === "planning" ? PLANNING_VIEWS : PREPARATION_VIEWS;
@@ -47,7 +46,6 @@ export default function Navbar() {
 
                         <div className="flex items-center gap-8">
                             <div className="flex-shrink-0 flex items-center gap-2">
-                                <Image src="/logo1.png" alt="Budgetdog Logo" width={32} height={32} className="object-contain" />
                                 <span className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white whitespace-nowrap">
                                     BudgetDog<span className="text-primary hidden lg:inline ml-1">Tax Command Center</span>
                                 </span>

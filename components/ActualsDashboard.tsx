@@ -16,17 +16,26 @@ import {
 } from "recharts";
 import { Activity, PieChart as PieIcon, BarChart3, TrendingUp, Download, LucideIcon } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
-
-function cn(...inputs: ClassValue[]) {
-    return twMerge(clsx(inputs));
-}
+import { cn, triggerHaptic } from "@/lib/utils";
 
 // COLORS moved to component scope for semantic clarity
+// --- Components ---
+const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+        return (
+            <div className="bg-zinc-900 border border-white/10 p-3 rounded-xl shadow-2xl backdrop-blur-xl">
+                <p className="text-sm font-bold text-white mb-1 uppercase tracking-wider">{payload[0].name}</p>
+                <p className="text-xl font-mono font-bold text-yellow-500">
+                    {payload[0].value.toLocaleString()} <span className="text-xs font-sans font-normal text-zinc-500 lowercase">hrs</span>
+                </p>
+            </div>
+        );
+    }
+    return null;
+};
 
-const Card = ({ children, title, icon: Icon }: { children: React.ReactNode; title: string; icon: LucideIcon }) => (
-    <div className="bg-[#111111]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8 flex flex-col h-full hover:bg-white/[0.03] transition-colors">
+const Card = ({ children, className, title, icon: Icon }: { children: React.ReactNode; className?: string; title: string; icon: LucideIcon }) => (
+    <div className={cn("bg-white/[0.02] backdrop-blur-3xl border border-white/[0.05] rounded-3xl p-6 shadow-2xl flex flex-col h-full hover:bg-white/[0.03] transition-colors", className)}>
         <div className="flex items-center gap-3 mb-6 text-yellow-500">
             <div className="p-2.5 bg-white/[0.05] rounded-xl border border-white/[0.1] shadow-inner">
                 <Icon size={20} className="drop-shadow-md" />
@@ -194,9 +203,8 @@ export default function ActualsDashboard() {
     };
 
     return (
-        <div className="w-full space-y-8 animate-in fade-in duration-500">
-            {/* Header & Controls */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-[#111111]/80 backdrop-blur-xl border border-white/10 p-6 rounded-3xl">
+        <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2">
                 <div className="flex flex-col gap-2">
                     <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                         <Activity className="text-primary" size={24} />
@@ -211,7 +219,10 @@ export default function ActualsDashboard() {
                             ].map(div => (
                                 <button
                                     key={div.id}
-                                    onClick={() => setSelectedDivision(div.id as any)}
+                                    onClick={() => {
+                                        triggerHaptic();
+                                        setSelectedDivision(div.id as any);
+                                    }}
                                     className={cn(
                                         "px-3 py-1 text-xs font-bold rounded-md transition-all",
                                         selectedDivision === div.id
@@ -235,7 +246,10 @@ export default function ActualsDashboard() {
                         ].map(preset => (
                             <button
                                 key={preset.label}
-                                onClick={() => setPresetRange(preset.days)}
+                                onClick={() => {
+                                    triggerHaptic();
+                                    setPresetRange(preset.days);
+                                }}
                                 className="px-2.5 py-1 text-[10px] uppercase font-bold text-gray-500 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-zinc-700 rounded transition-colors"
                             >
                                 {preset.label}
@@ -320,14 +334,7 @@ export default function ActualsDashboard() {
                                     <Cell key={`cell-${index}`} fill={entry.color} />
                                 ))}
                             </Pie>
-                            <Tooltip
-                                contentStyle={{
-                                    backgroundColor: "#171717",
-                                    borderColor: "#262626",
-                                    borderRadius: "0.5rem",
-                                    color: "#fff"
-                                }}
-                            />
+                            <Tooltip content={<CustomTooltip />} />
                             <Legend wrapperStyle={{ color: "#374151" }} />
                         </PieChart>
                     </ResponsiveContainer>

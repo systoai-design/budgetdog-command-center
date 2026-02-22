@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { triggerHaptic } from "@/lib/utils";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -94,7 +95,8 @@ const NumberControl = ({ label, value, onChange, unit, strict = false, isExterna
                 min={0}
                 value={value}
                 onChange={(e) => {
-                    let val = Number(e.target.value);
+                    const val = Number(e.target.value);
+                    triggerHaptic();
                     onChange(val);
                 }}
                 className="w-full bg-transparent text-left font-bold text-gray-900 dark:text-white focus:outline-none"
