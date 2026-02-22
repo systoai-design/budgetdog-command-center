@@ -11,6 +11,7 @@ import { Tab, TabsList } from "@/components/Tabs";
 import { Clock, TrendingUp, BarChart3, LayoutDashboard, Activity, Settings, UserCircle, LogOut, ChevronDown } from "lucide-react";
 import Lenis from 'lenis';
 import ProfileModal from "@/components/ProfileModal";
+import Image from "next/image";
 
 export default function Dashboard() {
     const { user, viewMode, division, setDivision, setViewMode, logout } = useAuth();
@@ -71,6 +72,7 @@ export default function Dashboard() {
     ];
 
     const PREPARATION_VIEWS = [
+        { value: "admin", label: "Super Admin (All)" },
         { value: "tax_planning_admin", label: "Tax Planning Admin" },
         { value: "tax_prep_admin", label: "Tax Preparation Admin" },
         { value: "preparer_l1", label: "Preparer Level 1" },
@@ -93,9 +95,7 @@ export default function Dashboard() {
                 {/* Brand & Workspace Hub */}
                 <div className="p-4 border-b border-white/5">
                     <div className="flex items-center gap-2 mb-6 px-2">
-                        <div className="w-6 h-6 rounded bg-yellow-500 flex items-center justify-center shrink-0">
-                            <span className="text-black font-bold text-xs">BD</span>
-                        </div>
+                        <Image src="/logo1.png" alt="Budgetdog Logo" width={24} height={24} className="object-contain" />
                         <span className="font-semibold tracking-tight text-sm">BudgetDog Command</span>
                     </div>
 
@@ -163,44 +163,44 @@ export default function Dashboard() {
                                 <TrendingUp size={16} className={activeTab === "capacity" ? "text-yellow-500" : "text-zinc-500"} />
                                 Capacity Simulator
                             </button>
-
-                            {user.isSuperAdmin && (
-                                <div className="mt-8 px-3">
-                                    <div className="p-3 bg-zinc-900/50 border border-white/5 rounded-xl">
-                                        <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-3">Global Overrides</p>
-
-                                        {/* Division Toggle */}
-                                        <div className="flex items-center bg-black rounded-lg p-1 border border-white/5 mb-3">
-                                            <button
-                                                onClick={() => setDivision("planning")}
-                                                className={`flex-1 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all ${division === "planning" ? "bg-white/10 text-white shadow-sm" : "text-zinc-500 hover:text-white"
-                                                    }`}
-                                            >
-                                                Planning
-                                            </button>
-                                            <button
-                                                onClick={() => setDivision("preparation")}
-                                                className={`flex-1 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all ${division === "preparation" ? "bg-white/10 text-white shadow-sm" : "text-zinc-500 hover:text-white"
-                                                    }`}
-                                            >
-                                                Prep
-                                            </button>
-                                        </div>
-
-                                        {/* View Selector */}
-                                        <select
-                                            value={viewMode}
-                                            onChange={(e) => setViewMode(e.target.value as any)}
-                                            className="w-full bg-black border border-white/5 text-zinc-300 text-xs rounded-lg px-2 py-2 focus:outline-none focus:ring-1 focus:ring-yellow-500/50 appearance-none cursor-pointer"
-                                        >
-                                            {currentViews.map(v => (
-                                                <option key={v.value} value={v.value}>{v.label}</option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                </div>
-                            )}
                         </>
+                    )}
+
+                    {user.isSuperAdmin && (
+                        <div className="mt-8 px-3">
+                            <div className="p-3 bg-zinc-900/50 border border-white/5 rounded-xl">
+                                <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-3">Global Overrides</p>
+
+                                {/* Division Toggle */}
+                                <div className="flex items-center bg-black rounded-lg p-1 border border-white/5 mb-3">
+                                    <button
+                                        onClick={() => setDivision("planning")}
+                                        className={`flex-1 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all ${division === "planning" ? "bg-white/10 text-white shadow-sm" : "text-zinc-500 hover:text-white"
+                                            }`}
+                                    >
+                                        Planning
+                                    </button>
+                                    <button
+                                        onClick={() => setDivision("preparation")}
+                                        className={`flex-1 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all ${division === "preparation" ? "bg-white/10 text-white shadow-sm" : "text-zinc-500 hover:text-white"
+                                            }`}
+                                    >
+                                        Prep
+                                    </button>
+                                </div>
+
+                                {/* View Selector */}
+                                <select
+                                    value={viewMode}
+                                    onChange={(e) => setViewMode(e.target.value as any)}
+                                    className="w-full bg-black border border-white/5 text-zinc-300 text-xs rounded-lg px-2 py-2 focus:outline-none focus:ring-1 focus:ring-yellow-500/50 appearance-none cursor-pointer"
+                                >
+                                    {currentViews.map(v => (
+                                        <option key={v.value} value={v.value}>{v.label}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
                     )}
                 </nav>
 
