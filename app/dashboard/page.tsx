@@ -5,6 +5,7 @@ import TimeTracker from "@/components/TimeTracker";
 import HiringSimulator from "@/components/HiringSimulator";
 import LiveCapacityDashboard from "@/components/LiveCapacityDashboard";
 import ActualsDashboard from "@/components/ActualsDashboard";
+import UserManagement from "@/components/UserManagement";
 import Sidebar from "@/components/Sidebar";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
@@ -15,7 +16,7 @@ import HapticScrollTracker from "@/components/HapticScrollTracker";
 export default function Dashboard() {
     const { user, viewMode, division } = useAuth();
     const router = useRouter();
-    const [activeTab, setActiveTab] = useState<"time" | "capacity" | "live" | "actuals">("live");
+    const [activeTab, setActiveTab] = useState<"time" | "capacity" | "live" | "actuals" | "users">("live");
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     useEffect(() => {
@@ -32,7 +33,10 @@ export default function Dashboard() {
         if (!isAdminView && (activeTab === "capacity" || activeTab === "live")) {
             setActiveTab("time");
         }
-    }, [isAdminView, activeTab]);
+        if (viewMode !== "admin" && activeTab === "users") {
+            setActiveTab("time");
+        }
+    }, [isAdminView, viewMode, activeTab]);
 
     if (!user) return null;
 
@@ -95,6 +99,7 @@ export default function Dashboard() {
                     {activeTab === "live" && isAdminView && <LiveCapacityDashboard />}
                     {activeTab === "capacity" && isAdminView && <HiringSimulator />}
                     {activeTab === "actuals" && <ActualsDashboard />}
+                    {activeTab === "users" && viewMode === "admin" && <UserManagement />}
                 </div>
             </main>
         </div>

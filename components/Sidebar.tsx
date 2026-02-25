@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { LayoutDashboard, Clock, TrendingUp, BarChart3, Activity, LogOut, ChevronLeft, ChevronRight, Settings } from "lucide-react";
+import { LayoutDashboard, Clock, TrendingUp, BarChart3, Activity, LogOut, ChevronLeft, ChevronRight, Settings, Users } from "lucide-react";
 import type { ViewMode } from "@/context/AuthContext";
 import Image from "next/image";
 import ProfileModal from "@/components/ProfileModal";
@@ -25,8 +25,8 @@ const PREPARATION_VIEWS: { value: ViewMode; label: string }[] = [
 ];
 
 interface SidebarProps {
-    activeTab: "time" | "capacity" | "live" | "actuals";
-    setActiveTab: (tab: "time" | "capacity" | "live" | "actuals") => void;
+    activeTab: "time" | "capacity" | "live" | "actuals" | "users";
+    setActiveTab: (tab: "time" | "capacity" | "live" | "actuals" | "users") => void;
 }
 
 export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
@@ -45,7 +45,10 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
             { id: "capacity", label: "Capacity Planner", icon: TrendingUp }
         ] : []),
         { id: "time", label: "Time Tracker", icon: Clock },
-        { id: "actuals", label: "Actuals Data", icon: BarChart3 }
+        { id: "actuals", label: "Actuals Data", icon: BarChart3 },
+        ...(viewMode === "admin" ? [
+            { id: "users", label: "Team Management", icon: Users }
+        ] : []),
     ];
 
     return (

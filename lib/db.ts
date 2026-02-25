@@ -49,4 +49,13 @@ export async function initDb() {
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     `);
+
+    await db.execute(`
+        CREATE TABLE IF NOT EXISTS user_roles (
+            email TEXT PRIMARY KEY,
+            role TEXT NOT NULL,
+            updated_by TEXT,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    `);
 }

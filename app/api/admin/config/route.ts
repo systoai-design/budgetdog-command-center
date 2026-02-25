@@ -8,10 +8,17 @@ export async function GET() {
         await initDb();
         const admins = await db.execute("SELECT * FROM super_admins");
         const domains = await db.execute("SELECT * FROM allowed_domains");
+        const roles = await db.execute("SELECT email, role FROM user_roles");
+
+        const rolesMap = roles.rows.reduce((acc: Record<string, string>, row: any) => {
+            acc[row.email] = row.role;
+            return acc;
+        }, {});
 
         return NextResponse.json({
             admins: admins.rows,
-            domains: domains.rows
+            domains: domains.rows,
+            roles: rolesMap
         });
     } catch (error) {
         console.error("Database error:", error);

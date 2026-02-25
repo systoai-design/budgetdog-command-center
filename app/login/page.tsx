@@ -14,31 +14,9 @@ function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
 
-const ROLE_OPTIONS = [
-    {
-        group: "Tax Planning",
-        roles: [
-            { value: "advisor", label: "Advisor" },
-            { value: "support", label: "Support Staff" },
-        ],
-    },
-    {
-        group: "Tax Preparation",
-        roles: [
-            { value: "tax_planning_admin", label: "Tax Planning Admin" },
-            { value: "tax_prep_admin", label: "Tax Preparation Admin" },
-            { value: "preparer_l1", label: "Tax Preparer Level 1" },
-            { value: "preparer_l2", label: "Tax Preparer Level 2" },
-            { value: "reviewer", label: "Tax Return Reviewer" },
-            { value: "project_manager", label: "Project Manager" },
-        ],
-    },
-];
-
 export default function LoginPage() {
     const router = useRouter();
-    const [role, setRole] = useState<string>("advisor");
-    const { loginWithGoogle, loginWithEmail, signupWithEmail, setRole: saveRolePreference } = useAuth();
+    const { loginWithGoogle, loginWithEmail, signupWithEmail } = useAuth();
 
     const [isLogin, setIsLogin] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
@@ -54,12 +32,6 @@ export default function LoginPage() {
         setIsLoading(true);
         setError(null);
         try {
-            if (role === "advisor" || role === "support") {
-                saveRolePreference(role);
-            } else {
-                saveRolePreference("advisor");
-            }
-
             if (isLogin) {
                 await loginWithEmail(email, password);
             } else {
@@ -79,11 +51,6 @@ export default function LoginPage() {
         setIsLoading(true);
         setError(null);
         try {
-            if (role === "advisor" || role === "support") {
-                saveRolePreference(role);
-            } else {
-                saveRolePreference("advisor");
-            }
             await loginWithGoogle();
         } catch (err: any) {
             console.error("Google Login failed:", err);
@@ -248,34 +215,6 @@ export default function LoginPage() {
                     </div>
 
                     <form onSubmit={handleAuth} className="space-y-4">
-                        {/* Role */}
-                        <div>
-                            <label htmlFor="role-select" className="block text-[11px] font-bold text-zinc-500 uppercase tracking-wider mb-2">
-                                Your Role
-                            </label>
-                            <div className="relative">
-                                <select
-                                    id="role-select"
-                                    value={role}
-                                    onChange={(e) => setRole(e.target.value)}
-                                    className="w-full bg-zinc-900 border border-white/[0.06] rounded-xl py-3 px-4 pr-10 text-white text-sm font-medium focus:ring-2 focus:ring-yellow-500/30 focus:border-yellow-500/40 outline-none transition-all appearance-none cursor-pointer hover:border-white/[0.1]"
-                                >
-                                    {ROLE_OPTIONS.map((group) => (
-                                        <optgroup key={group.group} label={group.group}>
-                                            {group.roles.map((r) => (
-                                                <option key={r.value} value={r.value}>
-                                                    {r.label}
-                                                </option>
-                                            ))}
-                                        </optgroup>
-                                    ))}
-                                </select>
-                                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none">
-                                    <ChevronDown size={15} />
-                                </div>
-                            </div>
-                        </div>
-
                         {/* Fields */}
                         <div className="space-y-3">
                             {!isLogin && (

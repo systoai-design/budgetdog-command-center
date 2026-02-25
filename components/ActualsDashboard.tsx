@@ -90,16 +90,26 @@ export default function ActualsDashboard() {
         let matchesCategory = false;
 
         if (user?.isSuperAdmin) {
-            if (selectedDivision === "all") {
-                matchesCategory = true;
-            } else if (selectedDivision === "planning") {
-                matchesCategory = PLANNING_ROLES.includes(e.category);
-            } else if (selectedDivision === "preparation") {
-                matchesCategory = PREPARATION_ROLES.includes(e.category);
+            // If Super Admin is acting as a granular role, strictly filter to that role
+            if (!PLANNING_ROLES.includes(viewMode) && !PREPARATION_ROLES.includes(viewMode)) {
+                // This shouldn't happen based on types, but fallback to strict match
+                matchesCategory = e.category === viewMode;
+            } else if (viewMode !== "admin" && viewMode !== "tax_planning_admin" && viewMode !== "tax_prep_admin") {
+                // Super Admin is explicitly requesting to view precisely as a granular role (e.g. "advisor")
+                matchesCategory = e.category === viewMode;
+            } else {
+                // Super Admin is in an overarching admin view, respect the global Division toggle
+                if (selectedDivision === "all") {
+                    matchesCategory = true;
+                } else if (selectedDivision === "planning") {
+                    matchesCategory = PLANNING_ROLES.includes(e.category);
+                } else if (selectedDivision === "preparation") {
+                    matchesCategory = PREPARATION_ROLES.includes(e.category);
+                }
             }
         } else {
             // Normal users only see data if their viewMode is 'admin', or their specific category
-            matchesCategory = viewMode === 'admin' || e.category === viewMode;
+            matchesCategory = viewMode === 'admin' || viewMode === 'tax_planning_admin' || viewMode === 'tax_prep_admin' || e.category === viewMode;
         }
 
         // 2. Date Range Filter

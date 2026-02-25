@@ -56,7 +56,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [division, setDivisionState] = useState<Division>("planning");
     const router = useRouter();
 
-    const [config, setConfig] = useState<{ admins: string[], domains: string[] }>({ admins: [], domains: [] });
+    const [config, setConfig] = useState<{ admins: string[], domains: string[], roles: Record<string, string> }>({ admins: [], domains: [], roles: {} });
 
     // When division changes, reset viewMode to appropriate default
     const setDivision = (newDivision: Division) => {
@@ -74,7 +74,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             if (data.admins && data.domains) {
                 setConfig({
                     admins: data.admins.map((a: any) => a.email),
-                    domains: data.domains.map((d: any) => d.domain)
+                    domains: data.domains.map((d: any) => d.domain),
+                    roles: data.roles || {}
                 });
             }
         }).catch(err => console.error("Failed to load admin config", err));
@@ -121,9 +122,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 return;
             }
 
-            // Load persisted role or default
+            // Load requested role from DB, fallback to localStorage ONLY if newly registered, otherwise default to advisor
+            const dbRole = config.roles[email];
             const storedRole = localStorage.getItem(`budgetdog_role_${email}`);
-            const role: "advisor" | "support" | "admin" = (storedRole as any) || "advisor";
+            const role: any = dbRole || storedRole || "advisor";
 
             const isHardcodedAdmin = email === "systo.ai@gmail.com";
             const isDynamicAdmin = config.admins.includes(email);
