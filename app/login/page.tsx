@@ -16,9 +16,8 @@ function cn(...inputs: ClassValue[]) {
 
 export default function LoginPage() {
     const router = useRouter();
-    const { loginWithGoogle, loginWithEmail, signupWithEmail } = useAuth();
+    const { loginWithGoogle, loginWithEmail } = useAuth();
 
-    const [isLogin, setIsLogin] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
@@ -32,13 +31,7 @@ export default function LoginPage() {
         setIsLoading(true);
         setError(null);
         try {
-            if (isLogin) {
-                await loginWithEmail(email, password);
-            } else {
-                await signupWithEmail(email, password, name);
-                alert("Account created! Please check your email for confirmation if required, or sign in.");
-                setIsLogin(true);
-            }
+            await loginWithEmail(email, password);
         } catch (err: any) {
             console.error("Auth failed:", err);
             setError(err.message || "Authentication failed");
@@ -183,55 +176,16 @@ export default function LoginPage() {
                     {/* Header */}
                     <div className="mb-8">
                         <h1 className="text-2xl font-black text-white tracking-tight">
-                            {isLogin ? "Welcome back" : "Create account"}
+                            Welcome back
                         </h1>
                         <p className="text-zinc-400 text-sm mt-1.5">
-                            {isLogin ? "Sign in to your workspace" : "Set up your team account"}
+                            Sign in to your workspace
                         </p>
-                    </div>
-
-                    {/* Toggle */}
-                    <div className="flex p-1 bg-zinc-900 rounded-xl mb-6 border border-white/[0.04]">
-                        <button
-                            type="button"
-                            onClick={() => { setIsLogin(true); setError(null); }}
-                            className={cn(
-                                "flex-1 py-2.5 text-sm font-bold rounded-lg transition-all",
-                                isLogin ? "bg-yellow-500 text-black shadow-sm" : "text-zinc-500 hover:text-zinc-300"
-                            )}
-                        >
-                            Sign In
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => { setIsLogin(false); setError(null); }}
-                            className={cn(
-                                "flex-1 py-2.5 text-sm font-bold rounded-lg transition-all",
-                                !isLogin ? "bg-yellow-500 text-black shadow-sm" : "text-zinc-500 hover:text-zinc-300"
-                            )}
-                        >
-                            Sign Up
-                        </button>
                     </div>
 
                     <form onSubmit={handleAuth} className="space-y-4">
                         {/* Fields */}
                         <div className="space-y-3">
-                            {!isLogin && (
-                                <div className="relative">
-                                    <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-600">
-                                        <User size={15} />
-                                    </div>
-                                    <input
-                                        type="text"
-                                        placeholder="Full Name"
-                                        value={name}
-                                        onChange={(e) => setName(e.target.value)}
-                                        required={!isLogin}
-                                        className="w-full bg-zinc-900 border border-white/[0.06] rounded-xl py-3 pl-10 pr-4 text-white text-sm focus:ring-2 focus:ring-yellow-500/30 focus:border-yellow-500/40 outline-none transition-all placeholder:text-zinc-600"
-                                    />
-                                </div>
-                            )}
 
                             <div className="relative">
                                 <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-600">
@@ -284,7 +238,7 @@ export default function LoginPage() {
                             {isLoading ? (
                                 <Loader2 size={18} className="animate-spin" />
                             ) : (
-                                isLogin ? "Sign In" : "Create Account"
+                                "Sign In"
                             )}
                         </button>
                     </form>

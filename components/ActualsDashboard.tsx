@@ -73,12 +73,18 @@ export default function ActualsDashboard() {
 
     useEffect(() => {
         const fetchEntries = async () => {
-            const res = await fetch("/api/time-entries");
+            if (!user) return;
+            const isAdminView = viewMode === "admin" || viewMode === "tax_planning_admin" || viewMode === "tax_prep_admin";
+            const url = user.isSuperAdmin || isAdminView
+                ? "/api/time-entries?admin=true"
+                : `/api/time-entries?email=${encodeURIComponent(user.email)}`;
+
+            const res = await fetch(url);
             const data = await res.json();
             setEntries(data);
         };
         fetchEntries();
-    }, []);
+    }, [user, viewMode]);
 
     // Division role mapping
     const PLANNING_ROLES = ["advisor", "support", "admin"];
